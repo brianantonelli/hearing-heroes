@@ -88,3 +88,5 @@ For documenting development progress and enabling others to follow along with th
 
 ## IMPORTANT
 - Ignore `prompts.md` this is a non-related file I'm using to keep notes from our conversation.
+- DO NOT send or include binary files (*.mp3, *.png, images, audio files, etc.) in your messages. This will cause API errors.
+- Use placeholder references or file paths when discussing binary files, never their contents.
