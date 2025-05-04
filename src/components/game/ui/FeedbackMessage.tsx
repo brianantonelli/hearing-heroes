@@ -90,38 +90,38 @@ const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
 
   return (
     <Container position={[x, y]}>
-      {/* Large emoji */}
+      {/* Large emoji - significantly bigger for more visual impact */}
       <Text
         text={message.emoji}
         anchor={0.5}
-        y={-45}
+        y={-60}
         style={
           new PIXI.TextStyle({
-            fontSize: emojiSize,
+            fontSize: emojiSize * 2, // Double the size for much larger emoji
           })
         }
       />
 
-      {/* Feedback text */}
+      {/* Feedback text - positioned further down to make room for larger emoji */}
       <Text
         text={message.text}
         anchor={0.5}
-        y={30}
+        y={50}
         style={
           new PIXI.TextStyle({
             fill: color,
-            fontSize: textSize,
+            fontSize: textSize * 1.25, // Also increase text size for better proportions
             fontFamily: 'Arial',
             fontWeight: 'bold',
             dropShadow: true,
-            dropShadowAlpha: 0.2,
+            dropShadowAlpha: 0.3, // Slightly stronger shadow for better visibility
             dropShadowDistance: 2,
           })
         }
       />
 
-      {/* Button container for both buttons */}
-      <Container position={[0, 95]}>
+      {/* Button container for both buttons - moved down to make space for large emoji */}
+      <Container position={[0, 130]}>
         {/* Retry button - show on any incorrect attempt */}
         {showRetryButton && (
           <Container position={[-120, 0]} interactive={true} cursor="pointer" pointerdown={onRetry}>

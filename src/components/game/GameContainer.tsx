@@ -235,8 +235,8 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
             y={height - 220} /* Moved even higher for the much taller button */
             onRetry={onRetryClick || undefined}
             onSkip={onSkipClick || undefined} /* Add skip handler */
-            emojiSize={54} /* Larger emoji for better visibility */
-            textSize={22} /* Larger text for better readability */
+            emojiSize={70} /* Even larger emoji for better visibility and impact */
+            textSize={26} /* Larger text for better readability */
           />
         )}
 
