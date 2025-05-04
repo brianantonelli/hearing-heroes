@@ -346,3 +346,8 @@ lets continue
 ⏺ You're right. Let's continue our setup by creating the DataService to handle IndexedDB operations and practice session data:
 
 <commits>
+<creates metrics.ts>
+<creates dbService.ts>
+<creates metricsService.ts>
+<commits>
+
