@@ -350,4 +350,6 @@ lets continue
 <creates dbService.ts>
 <creates metricsService.ts>
 <commits>
-
+<creates audioService.ts>
+<creates sw.js>
+<creates manifest.json>

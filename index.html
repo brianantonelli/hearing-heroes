@@ -8,6 +8,7 @@
     <meta name="description" content="HearingHeroes - Speech discrimination game for children with hearing impairments" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="mask-icon" href="/mask-icon.svg" color="#4287f5" />
+    <link rel="manifest" href="/manifest.json" />
     <title>HearingHeroes</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,5 +16,11 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <noscript>
+      <div style="text-align: center; padding: 2rem;">
+        <h1>HearingHeroes</h1>
+        <p>JavaScript is required to run this application.</p>
+      </div>
+    </noscript>
   </body>
 </html>
