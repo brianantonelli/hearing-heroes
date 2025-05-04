@@ -1,6 +1,8 @@
 import React from 'react';
+import { Container, Graphics, Text } from '@pixi/react';
 import { useAppContext } from '../../../context/AppContext';
 import GameButton from '../ui/GameButton';
+import * as PIXI from 'pixi.js';
 
 interface LevelSelectScreenProps {
   onLevelSelect: (level: number) => void;
@@ -25,51 +27,99 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
     { number: 5, name: 'Level 5', description: 'Expert' }
   ];
   
+  // Calculate positions
+  const centerX = width / 2;
+  const startY = 120;
+  const buttonSpacing = 70;
+  const buttonWidth = 250;
+  const buttonHeight = 60;
+  
+  // Draw the button
+  const drawLevelButton = React.useCallback((g: PIXI.Graphics, isSelected: boolean) => {
+    g.clear();
+    g.beginFill(isSelected ? 0xd1e0ff : 0xffffff);
+    g.lineStyle(4, isSelected ? 0x4178df : 0x4287f5);
+    g.drawRoundedRect(-buttonWidth/2, -buttonHeight/2, buttonWidth, buttonHeight, 10);
+    g.endFill();
+  }, []);
+  
   return (
-    <div className="flex flex-col items-center justify-center h-full p-8">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-primary mb-4">
-          Hello, {childName}!
-        </h1>
-        <p className="text-xl">
-          Choose a level to start playing:
-        </p>
-      </div>
+    <Container>
+      {/* Title text */}
+      <Text
+        text={`Hello, ${childName}!`}
+        anchor={0.5}
+        x={centerX}
+        y={40}
+        style={new PIXI.TextStyle({
+          fill: 0x4287f5,
+          fontSize: 36,
+          fontFamily: 'Arial',
+          fontWeight: 'bold'
+        })}
+      />
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-3xl">
-        {levels.map((level) => (
-          <button
-            key={level.number}
-            onClick={() => onLevelSelect(level.number)}
-            className={`
-              flex flex-col items-center justify-center
-              bg-white border-4 border-primary rounded-lg
-              py-6 px-8 shadow-lg hover:shadow-xl
-              transform transition-transform hover:scale-105
-              ${level.number === state.currentLevel ? 'bg-blue-100 border-blue-600' : ''}
-            `}
+      <Text
+        text="Choose a level to start playing:"
+        anchor={0.5}
+        x={centerX}
+        y={80}
+        style={new PIXI.TextStyle({
+          fill: 0x333333,
+          fontSize: 24,
+          fontFamily: 'Arial'
+        })}
+      />
+      
+      {/* Level buttons */}
+      {levels.map((level, index) => {
+        const y = startY + (index * buttonSpacing);
+        const isSelected = level.number === state.currentLevel;
+        
+        return (
+          <Container 
+            key={level.number} 
+            position={[centerX, y]} 
+            interactive={true} 
+            cursor="pointer"
+            pointerdown={() => onLevelSelect(level.number)}
           >
-            <span className="text-2xl font-bold text-primary mb-2">
-              {level.name}
-            </span>
-            <span className="text-lg text-gray-600">
-              {level.description}
-            </span>
-          </button>
-        ))}
-      </div>
+            <Graphics draw={(g) => drawLevelButton(g, isSelected)} />
+            <Text
+              text={level.name}
+              anchor={0.5}
+              y={-10}
+              style={new PIXI.TextStyle({
+                fill: 0x4287f5,
+                fontSize: 20,
+                fontFamily: 'Arial',
+                fontWeight: 'bold'
+              })}
+            />
+            <Text
+              text={level.description}
+              anchor={0.5}
+              y={15}
+              style={new PIXI.TextStyle({
+                fill: 0x666666,
+                fontSize: 16,
+                fontFamily: 'Arial'
+              })}
+            />
+          </Container>
+        );
+      })}
       
-      <div className="mt-12">
-        <GameButton
-          onClick={() => onLevelSelect(state.currentLevel)}
-          text={`Start with Level ${state.currentLevel}`}
-          x={width / 2}
-          y={0}
-          width={300}
-          fontSize={24}
-        />
-      </div>
-    </div>
+      {/* Start button */}
+      <GameButton
+        onClick={() => onLevelSelect(state.currentLevel)}
+        text={`Start with Level ${state.currentLevel}`}
+        x={centerX}
+        y={height - 80}
+        width={300}
+        fontSize={24}
+      />
+    </Container>
   );
 };
 

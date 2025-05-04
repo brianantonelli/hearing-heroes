@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useContext, useEffect } from 'react';
+import React, { createContext, useReducer, useContext, useEffect, useRef } from 'react';
 import { preferencesService } from '../services/preferencesService';
 import { Preferences } from '../types/preferences';
 
@@ -112,6 +112,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
 // Context provider component
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  const isInitialMount = useRef(true);
 
   // Load preferences from DB on mount
   useEffect(() => {
@@ -170,9 +171,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
     
-    // Skip initial render sync since we load from DB first
-    const isInitialRender = state === initialState;
-    if (!isInitialRender) {
+    // Don't sync on first render - this would overwrite any preferences loaded from DB
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    } else {
       syncPreferences();
     }
   }, [

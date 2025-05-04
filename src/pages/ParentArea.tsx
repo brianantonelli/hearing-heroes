@@ -12,6 +12,7 @@ import SessionHistoryTable from '../components/dashboard/SessionHistoryTable';
 import SessionDetails from '../components/dashboard/SessionDetails';
 import OverallStats from '../components/dashboard/OverallStats';
 import ExportButton from '../components/dashboard/ExportButton';
+import PreferencesScreen from '../components/dashboard/PreferencesScreen';
 
 // Simple multiplication question for authentication
 const ParentAuth: React.FC<{ onAuthenticate: () => void }> = ({ onAuthenticate }) => {
@@ -49,7 +50,7 @@ const ParentAuth: React.FC<{ onAuthenticate: () => void }> = ({ onAuthenticate }
   };
   
   return (
-    <div className="flex flex-col items-center justify-center h-full p-8">
+    <div className="flex flex-col items-center justify-center min-h-screen p-8">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold text-primary mb-6 text-center">Parent Area</h2>
         <p className="mb-6 text-center">
@@ -99,7 +100,7 @@ const ParentAuth: React.FC<{ onAuthenticate: () => void }> = ({ onAuthenticate }
 };
 
 // Dashboard view types
-type DashboardView = 'overview' | 'sessions' | 'sessionDetails';
+type DashboardView = 'overview' | 'sessions' | 'sessionDetails' | 'preferences';
 
 // Parent Dashboard component
 const Dashboard: React.FC = () => {
@@ -142,7 +143,7 @@ const Dashboard: React.FC = () => {
   };
 
   const renderContent = () => {
-    if (loading) {
+    if (loading && currentView !== 'preferences') {
       return (
         <div className="flex justify-center py-8">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -150,7 +151,7 @@ const Dashboard: React.FC = () => {
       );
     }
 
-    if (error) {
+    if (error && currentView !== 'preferences') {
       return (
         <div className="p-4 bg-red-100 text-red-700 rounded-md">
           {error}
@@ -224,12 +225,15 @@ const Dashboard: React.FC = () => {
             onBack={() => setCurrentView('sessions')}
           />
         );
+        
+      case 'preferences':
+        return <PreferencesScreen />;
     }
   };
   
   return (
-    <div className="flex flex-col h-full">
-      <header className="bg-primary text-white p-4 flex justify-between items-center">
+    <div className="flex flex-col min-h-screen">
+      <header className="bg-primary text-white p-4 flex justify-between items-center sticky top-0 z-10">
         <h1 className="text-xl font-bold">Parent Dashboard</h1>
         <button 
           onClick={() => navigate('/')}
@@ -239,9 +243,9 @@ const Dashboard: React.FC = () => {
         </button>
       </header>
       
-      <div className="flex-1 p-6 bg-gray-100">
-        <div className="max-w-6xl mx-auto">
-          <nav className="mb-6">
+      <div className="flex-1 p-6 bg-gray-100 overflow-y-auto" style={{ height: 'calc(100vh - 70px)' }}>
+        <div className="max-w-6xl mx-auto pb-12">
+          <nav className="mb-6 sticky top-0 bg-gray-100 z-5 pt-2 pb-1">
             <ul className="flex border-b">
               <li className="mr-1">
                 <button 
@@ -269,6 +273,20 @@ const Dashboard: React.FC = () => {
                   }}
                 >
                   Sessions
+                </button>
+              </li>
+              <li className="mr-1">
+                <button 
+                  className={`inline-block py-2 px-4 ${
+                    currentView === 'preferences' 
+                      ? 'border-b-2 border-blue-500 text-blue-600 font-medium'
+                      : 'text-gray-600 hover:text-blue-600'
+                  }`}
+                  onClick={() => {
+                    setCurrentView('preferences');
+                  }}
+                >
+                  Preferences
                 </button>
               </li>
             </ul>

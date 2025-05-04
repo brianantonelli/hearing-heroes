@@ -116,8 +116,12 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     // Show level select before intro if enabled in preferences
     if (state.showLevelSelection && showLevelSelect) {
       return (
-        <Container position={[0, 0]} width={width} height={height}>
-          <LevelSelectScreen onLevelSelect={handleLevelSelect} />
+        <Container position={[0, 0]}>
+          <LevelSelectScreen 
+            onLevelSelect={handleLevelSelect}
+            width={width}
+            height={height}
+          />
         </Container>
       );
     }
