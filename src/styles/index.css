@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    @apply h-full w-full;
+  }
+  
+  body {
+    @apply bg-white text-gray-800 font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+}
+
+@layer components {
+  .loading-screen {
+    @apply flex justify-center items-center h-full w-full bg-white;
+  }
+
+  .loading-animation {
+    @apply text-2xl text-primary animate-pulse;
+  }
+
+  .btn {
+    @apply cursor-pointer border-none rounded-lg font-sans text-base py-3 px-6 bg-primary text-white transition-colors;
+  }
+
+  .btn:hover {
+    @apply bg-blue-600;
+  }
+
+  .btn:active {
+    @apply scale-[0.98];
+  }
+}

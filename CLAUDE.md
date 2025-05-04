@@ -31,7 +31,7 @@ For documenting development progress and enabling others to follow along with th
 
 1. Development Phases and Branches:
    - Phase 1: Project Setup - `setup` branch
-   - Phase 2: Core Game Mechanics - `game-mechanics` branch  
+   - Phase 2: Core Game Mechanics - `game-mechanics` branch
    - Phase 3: Content & Progression - `content-progression` branch
    - Phase 4: Parent Dashboard - `parent-dashboard` branch
    - Phase 5: Testing & Refinement - `refinement` branch
@@ -85,3 +85,6 @@ For documenting development progress and enabling others to follow along with th
 - Technical specification: `/technical_specification.md`
 - Project structure: `/project_structure.md`
 - Development phases and git strategy: Technical specification's "Development Phases & Git Strategy" section
+
+## IMPORTANT
+- Ignore `prompts.md` this is a non-related file I'm using to keep notes from our conversation.
