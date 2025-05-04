@@ -1,0 +1,14 @@
+{
+  "name": "hearing-heroes-scripts",
+  "version": "1.0.0",
+  "description": "Utility scripts for Hearing Heroes game",
+  "private": true,
+  "scripts": {
+    "generate": "node generate-audio.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-polly": "^3.433.0",
+    "@aws-sdk/credential-provider-ini": "^3.433.0",
+    "commander": "^11.1.0"
+  }
+}
