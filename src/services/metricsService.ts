@@ -175,6 +175,13 @@ export class MetricsService {
   }
   
   /**
+   * Get practice session by ID
+   */
+  async getPracticeSession(id: string): Promise<PracticeSession | undefined> {
+    return dbService.getPracticeSession(id);
+  }
+  
+  /**
    * Get practice sessions by difficulty level
    */
   async getSessionsByLevel(level: number): Promise<PracticeSession[]> {

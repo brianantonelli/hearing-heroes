@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import { metricsService } from '../services/metricsService';
+import { OverallStatistics, PracticeSession } from '../types/metrics';
+
+// Import styles to ensure Tailwind classes are included
+import '../styles/index.css';
+
+// Dashboard Components
+import SessionHistoryTable from '../components/dashboard/SessionHistoryTable';
+import SessionDetails from '../components/dashboard/SessionDetails';
+import OverallStats from '../components/dashboard/OverallStats';
+import ExportButton from '../components/dashboard/ExportButton';
 
 // Simple multiplication question for authentication
 const ParentAuth: React.FC<{ onAuthenticate: () => void }> = ({ onAuthenticate }) => {
@@ -87,9 +98,134 @@ const ParentAuth: React.FC<{ onAuthenticate: () => void }> = ({ onAuthenticate }
   );
 };
 
-// Parent Dashboard (placeholder for now)
+// Dashboard view types
+type DashboardView = 'overview' | 'sessions' | 'sessionDetails';
+
+// Parent Dashboard component
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [currentView, setCurrentView] = useState<DashboardView>('overview');
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [sessions, setSessions] = useState<PracticeSession[]>([]);
+  const [overallStats, setOverallStats] = useState<OverallStatistics | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Load data on component mount
+  useEffect(() => {
+    async function loadDashboardData() {
+      try {
+        setLoading(true);
+
+        // Load sessions and overall statistics
+        const [recentSessions, statistics] = await Promise.all([
+          metricsService.getRecentSessions(10),
+          metricsService.getOverallStatistics()
+        ]);
+
+        setSessions(recentSessions);
+        setOverallStats(statistics);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error loading dashboard data:', err);
+        setError('Failed to load dashboard data');
+        setLoading(false);
+      }
+    }
+
+    loadDashboardData();
+  }, []);
+
+  const handleSessionSelect = (sessionId: string) => {
+    setSelectedSessionId(sessionId);
+    setCurrentView('sessionDetails');
+  };
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="p-4 bg-red-100 text-red-700 rounded-md">
+          {error}
+        </div>
+      );
+    }
+
+    switch (currentView) {
+      case 'overview':
+        return (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold">Progress Summary</h2>
+              {overallStats && (
+                <ExportButton isOverallStats={true} />
+              )}
+            </div>
+
+            {overallStats ? (
+              <OverallStats stats={overallStats} />
+            ) : (
+              <div className="bg-white p-6 rounded-lg shadow">
+                <p className="text-gray-600">No progress data available yet.</p>
+              </div>
+            )}
+
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Recent Sessions</h2>
+                <button
+                  onClick={() => setCurrentView('sessions')}
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  View All Sessions
+                </button>
+              </div>
+
+              <SessionHistoryTable 
+                sessions={sessions.slice(0, 5)} 
+                onSessionSelect={handleSessionSelect}
+              />
+            </div>
+          </div>
+        );
+
+      case 'sessions':
+        return (
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Session History</h2>
+              <button
+                onClick={() => setCurrentView('overview')}
+                className="py-2 px-4 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                Back to Overview
+              </button>
+            </div>
+
+            <SessionHistoryTable 
+              sessions={sessions} 
+              onSessionSelect={handleSessionSelect}
+            />
+          </div>
+        );
+
+      case 'sessionDetails':
+        if (!selectedSessionId) return null;
+        return (
+          <SessionDetails 
+            sessionId={selectedSessionId}
+            onBack={() => setCurrentView('sessions')}
+          />
+        );
+    }
+  };
   
   return (
     <div className="flex flex-col h-full">
@@ -104,21 +240,41 @@ const Dashboard: React.FC = () => {
       </header>
       
       <div className="flex-1 p-6 bg-gray-100">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white p-6 rounded-lg shadow mb-6">
-            <h2 className="text-xl font-bold mb-4">Progress Summary</h2>
-            <p className="text-gray-600">Progress visualization charts will be implemented in the parent dashboard branch.</p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow mb-6">
-            <h2 className="text-xl font-bold mb-4">Recent Sessions</h2>
-            <p className="text-gray-600">Session history will be implemented in the parent dashboard branch.</p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-xl font-bold mb-4">Settings</h2>
-            <p className="text-gray-600">Settings controls will be implemented in the parent dashboard branch.</p>
-          </div>
+        <div className="max-w-6xl mx-auto">
+          <nav className="mb-6">
+            <ul className="flex border-b">
+              <li className="mr-1">
+                <button 
+                  className={`inline-block py-2 px-4 ${
+                    currentView === 'overview' 
+                      ? 'border-b-2 border-blue-500 text-blue-600 font-medium'
+                      : 'text-gray-600 hover:text-blue-600'
+                  }`}
+                  onClick={() => {
+                    setCurrentView('overview');
+                  }}
+                >
+                  Overview
+                </button>
+              </li>
+              <li className="mr-1">
+                <button 
+                  className={`inline-block py-2 px-4 ${
+                    currentView === 'sessions' || currentView === 'sessionDetails'
+                      ? 'border-b-2 border-blue-500 text-blue-600 font-medium'
+                      : 'text-gray-600 hover:text-blue-600'
+                  }`}
+                  onClick={() => {
+                    setCurrentView('sessions');
+                  }}
+                >
+                  Sessions
+                </button>
+              </li>
+            </ul>
+          </nav>
+
+          {renderContent()}
         </div>
       </div>
     </div>
