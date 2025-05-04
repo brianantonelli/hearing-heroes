@@ -5,9 +5,6 @@ import App from './App';
 import './styles/index.css';
 import { routes } from './routes';
 
-// Force Tailwind to be included
-import 'tailwindcss/tailwind.css';
-
 // Register service worker for offline capabilities
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

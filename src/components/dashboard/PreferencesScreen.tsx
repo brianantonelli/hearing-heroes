@@ -309,7 +309,7 @@ const PreferencesScreen: React.FC = () => {
           <div className="flex flex-col">
             <button
               onClick={() => setIsClearDataModalOpen(true)}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded"
+              className="btn-yellow"
             >
               Clear Practice Data
             </button>
@@ -321,7 +321,7 @@ const PreferencesScreen: React.FC = () => {
           <div className="flex flex-col">
             <button
               onClick={() => setIsResetModalOpen(true)}
-              className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded"
+              className="btn-red"
             >
               Reset All Preferences
             </button>

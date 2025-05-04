@@ -38,4 +38,13 @@
   .btn:active {
     @apply scale-[0.98];
   }
+
+  /* Button styles */
+  .btn-yellow {
+    @apply bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded transition-colors;
+  }
+  
+  .btn-red {
+    @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition-colors;
+  }
 }
