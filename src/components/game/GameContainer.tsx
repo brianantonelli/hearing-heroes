@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { Stage, Container } from '@pixi/react';
 import { useAppContext } from '../../context/AppContext';
 import { getImagePath } from '../../services/wordPairsService';
@@ -10,10 +10,12 @@ import FeedbackMessage from './ui/FeedbackMessage';
 import GameButton from './ui/GameButton';
 import GamePrompt from './ui/GamePrompt';
 import ProgressIndicator from './ui/ProgressIndicator';
+import CelebrationAnimation from './ui/CelebrationAnimation';
 
 // Screen Components
 import IntroScreen from './screens/IntroScreen';
 import CompleteScreen from './screens/CompleteScreen';
+import LevelSelectScreen from './screens/LevelSelectScreen';
 
 interface GameContainerProps {
   width: number;
@@ -25,8 +27,14 @@ interface GameContainerProps {
  * Handles the game display and interactions
  */
 const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
-  const { state } = useAppContext();
+  const { state, dispatch } = useAppContext();
   const gameState = useGameState();
+  
+  // Track if we've shown the level selection screen
+  const [showLevelSelect, setShowLevelSelect] = useState(state.showLevelSelection);
+  
+  // Track if we should show the celebration animation
+  const [showCelebration, setShowCelebration] = useState(false);
   
   const {
     wordPairs,
@@ -38,11 +46,31 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     isCorrect,
     isRetry,
     score,
-    handleWordSelection,
     handleReplay,
     handleRetry,
     handleNextLevel
   } = gameState;
+  
+  // Custom word selection handler to show celebration animation
+  const handleWordSelection = (word: string) => {
+    // We need to check if the word matches the current prompt word
+    // before calling the original handler, because it will change state
+    const isAnswer = word === gameState.currentPromptWord;
+    const isFirstAttempt = !gameState.isRetry;
+    
+    // Call the original handler
+    const result = gameState.handleWordSelection(word);
+    
+    // If this is a correct answer on first attempt, show celebration
+    if (isAnswer && isFirstAttempt) {
+      // Slight delay to let the feedback show first
+      setTimeout(() => {
+        setShowCelebration(true);
+      }, 500);
+    }
+    
+    return result;
+  };
   
   // Handle replay button click
   const onReplayClick = useCallback(() => {
@@ -61,6 +89,17 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     window.location.href = '/';
   }, [handleNextLevel]);
   
+  // Handle level selection
+  const handleLevelSelect = useCallback((level: number) => {
+    dispatch({ type: 'SET_LEVEL', payload: level });
+    setShowLevelSelect(false);
+  }, [dispatch]);
+  
+  // Handle celebration animation completion
+  const handleCelebrationComplete = useCallback(() => {
+    setShowCelebration(false);
+  }, []);
+  
   // Render the appropriate game content based on the current status
   const renderGameContent = () => {
     if (wordPairs.length === 0) {
@@ -71,6 +110,15 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
           y={height / 2}
           fontSize={24}
         />
+      );
+    }
+
+    // Show level select before intro if enabled in preferences
+    if (state.showLevelSelection && showLevelSelect) {
+      return (
+        <Container position={[0, 0]} width={width} height={height}>
+          <LevelSelectScreen onLevelSelect={handleLevelSelect} />
+        </Container>
       );
     }
 
@@ -192,6 +240,13 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
       }}
     >
       {renderGameContent()}
+      {showCelebration && (
+        <CelebrationAnimation 
+          width={width} 
+          height={height} 
+          onComplete={handleCelebrationComplete}
+        />
+      )}
     </Stage>
   );
 };

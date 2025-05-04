@@ -48,12 +48,8 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
       g.beginFill(fillColor);
       // Make sure the rounded corners match properly
       if (fillPercentage < 1) {
-        g.drawRoundedRect(-width/2, -height/2, fillWidth, height, height / 2, { 
-          tl: height / 2, 
-          tr: 0, 
-          bl: height / 2, 
-          br: 0 
-        });
+        // Use simpler version without corner radius options
+        g.drawRoundedRect(-width/2, -height/2, fillWidth, height, height / 2);
       } else {
         g.drawRoundedRect(-width/2, -height/2, fillWidth, height, height / 2);
       }
