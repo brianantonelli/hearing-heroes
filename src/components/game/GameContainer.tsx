@@ -198,30 +198,31 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
           isCorrect={selectedWord === currentPair.word2 ? isCorrect : null}
         />
 
-        {/* Replay button */}
+        {/* Replay button - more kid-friendly with prominent emoji */}
         {gameStatus === 'selection' && (
           <GameButton
-            text="Replay Word"
+            text="Listen Again"
             icon="🔊"
             x={width / 2}
-            y={height - 105} /* Moved up more to accommodate taller progress bar */
+            y={height - 120} /* Moved up more to accommodate taller button */
             onClick={onReplayClick}
-            width={220}
-            fontSize={22}
-            padding={10}
+            width={180}
+            fontSize={24}
+            padding={12}
+            backgroundColor={0x4CAF50} /* Green color for better visibility */
           />
         )}
 
-        {/* Feedback message - positioned higher to leave room for Try Again button and progress bar */}
+        {/* Feedback message - positioned higher to leave room for larger Try Again button and progress bar */}
         {gameStatus === 'feedback' && isCorrect !== null && (
           <FeedbackMessage
             isCorrect={isCorrect}
             isRetry={isRetry}
             x={width / 2}
-            y={height - 175} /* Moved even higher to prevent overlap with taller progress bar */
+            y={height - 220} /* Moved even higher for the much taller button */
             onRetry={onRetryClick || undefined}
-            emojiSize={48}
-            textSize={20}
+            emojiSize={54} /* Larger emoji for better visibility */
+            textSize={22} /* Larger text for better readability */
           />
         )}
 

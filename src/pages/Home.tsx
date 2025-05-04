@@ -27,23 +27,25 @@ const Home: React.FC = () => {
         </p>
       </div>
 
-      <div className="flex flex-col gap-6 w-full max-w-xs md:max-w-md">
+      <div className="flex flex-col items-center justify-center w-full">
         <button
-          className="bg-primary text-2xl text-white py-4 px-8 rounded-lg hover:bg-blue-600 transition-colors"
+          className="bg-primary text-3xl md:text-4xl text-white py-8 px-12 rounded-2xl hover:bg-blue-600 transition-colors shadow-lg flex flex-col items-center gap-2"
           onClick={handleStartGame}
         >
-          Start Game
-        </button>
-        <button
-          className="bg-secondary text-xl text-gray-800 py-3 px-8 rounded-lg hover:bg-green-400 transition-colors"
-          onClick={handleParentArea}
-        >
-          Parent Area
+          <span className="text-6xl md:text-7xl mb-2">🎮</span>
+          <span>Play</span>
         </button>
       </div>
 
-      <footer className="mt-8 w-full flex justify-end">
+      <footer className="mt-8 w-full flex justify-between items-center px-2">
         <div className="sound-toggle">{/* Sound toggle button will go here */}</div>
+        <button
+          className="bg-gray-200 p-4 rounded-full hover:bg-gray-300 transition-colors text-2xl shadow"
+          onClick={handleParentArea}
+          aria-label="Parent Area"
+        >
+          ⚙️
+        </button>
       </footer>
     </div>
   );

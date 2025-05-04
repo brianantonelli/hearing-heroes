@@ -38,6 +38,19 @@ const GameButton: React.FC<GameButtonProps> = ({
     g.endFill();
   }, [backgroundColor, fontSize, padding, width]);
 
+  // For child-friendly design, emphasize the emoji over text
+  // and ensure button has adequate padding
+  const iconSize = fontSize * 1.8; // Make icon much larger than text
+  const buttonHeight = iconSize + fontSize + padding * 2.5;
+  
+  const drawButtonUpdated = React.useCallback((g: PIXI.Graphics) => {
+    g.clear();
+    g.beginFill(backgroundColor);
+    g.lineStyle(3, 0x000000, 0.15);
+    g.drawRoundedRect(-width/2, -buttonHeight/2, width, buttonHeight, 15);
+    g.endFill();
+  }, [backgroundColor, width, buttonHeight]);
+
   return (
     <Container 
       position={[x, y]}
@@ -45,24 +58,27 @@ const GameButton: React.FC<GameButtonProps> = ({
       cursor="pointer"
       pointerdown={onClick}
     >
-      <Graphics draw={drawButton} />
-      {icon && (
+      <Graphics draw={drawButtonUpdated} />
+      
+      {/* Center the emoji and make it prominent */}
+      <Container position={[0, -fontSize/3]}>
         <Text
-          text={icon}
+          text={icon || "🔊"} // Default to speaker emoji if none provided
           anchor={0.5}
-          x={-width/2 + 20}
           style={new PIXI.TextStyle({
-            fontSize: fontSize + 2,
+            fontSize: iconSize,
           })}
         />
-      )}
+      </Container>
+      
+      {/* Text positioned below the emoji */}
       <Text
         text={text}
         anchor={0.5}
-        x={icon ? 10 : 0} // Offset text if there's an icon
+        y={iconSize/2} // Position below the emoji
         style={new PIXI.TextStyle({
           fill: textColor,
-          fontSize: fontSize,
+          fontSize: fontSize * 0.8, // Slightly smaller text
           fontFamily: 'Arial',
           fontWeight: 'bold'
         })}

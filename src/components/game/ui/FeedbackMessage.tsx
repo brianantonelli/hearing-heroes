@@ -119,39 +119,43 @@ const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
 
       {/* Retry button - show on any incorrect attempt */}
       {showRetryButton && (
-        <Container position={[0, 85]} interactive={true} cursor="pointer" pointerdown={onRetry}>
-          {/* Button background */}
+        <Container position={[0, 95]} interactive={true} cursor="pointer" pointerdown={onRetry}>
+          {/* Button background - larger, rounder, and more colorful for child appeal */}
           <Graphics draw={(g: PIXI.Graphics) => {
             g.clear();
-            g.beginFill(0x4287f5);
-            g.lineStyle(2, 0x000000, 0.1);
-            g.drawRoundedRect(-100, -20, 200, 40, 10);
+            g.beginFill(0xFF6B6B); // Brighter, more playful red color
+            g.lineStyle(3, 0x000000, 0.15);
+            g.drawRoundedRect(-110, -60, 220, 120, 20);
             g.endFill();
           }} />
           
-          {/* Icon */}
-          <Text
-            text="🔊"
-            anchor={0.5}
-            x={-60}
-            style={
-              new PIXI.TextStyle({
-                fontSize: 26,
-              })
-            }
-          />
+          {/* Large emoji icon */}
+          <Container position={[0, -25]}>
+            <Text
+              text="🔊"
+              anchor={0.5}
+              style={
+                new PIXI.TextStyle({
+                  fontSize: 50, // Much larger icon
+                })
+              }
+            />
+          </Container>
           
           {/* Button text */}
           <Text
             text="Try Again"
             anchor={0.5}
-            x={10}
+            y={30} // Below the emoji
             style={
               new PIXI.TextStyle({
                 fill: 0xffffff,
-                fontSize: 24,
+                fontSize: 26,
                 fontFamily: 'Arial',
                 fontWeight: 'bold',
+                dropShadow: true,
+                dropShadowAlpha: 0.3,
+                dropShadowDistance: 2,
               })
             }
           />
