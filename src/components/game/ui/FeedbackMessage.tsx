@@ -113,10 +113,10 @@ const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
         })}
       />
 
-      {/* Retry button - only show on first incorrect attempt */}
+      {/* Retry button - show on any incorrect attempt */}
       {showRetryButton && (
         <Container 
-          position={[0, 80]}
+          position={[0, 85]}
           interactive={true}
           cursor="pointer"
           pointerdown={onRetry}

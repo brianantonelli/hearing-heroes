@@ -159,7 +159,7 @@ const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
       
       {/* Celebration text */}
       {showText && (
-        <Container position={[width / 2, height / 2]}>
+        <Container position={[width / 2, height / 2 - 50]}> {/* Moved up to avoid interfering with progress bar */}
           {/* Create the text object manually instead of as JSX element */}
           {(() => {
             const textStyle = new PIXI.TextStyle({
