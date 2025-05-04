@@ -188,16 +188,66 @@ export const useGameState = (): GameStateData => {
         ...prev,
         retries: prev.retries + 1
       }));
+      
+      // Swap the word pairs for the retry
+      try {
+        setWordPairs(prevPairs => {
+          if (currentPairIndex < 0 || currentPairIndex >= prevPairs.length) return prevPairs;
+          
+          const newPairs = [...prevPairs];
+          const currentPair = {...newPairs[currentPairIndex]};
+          
+          if (!currentPair || !currentPair.word1 || !currentPair.word2) {
+            console.error('Invalid pair data for swapping:', currentPair);
+            return prevPairs;
+          }
+          
+          // Swap word1 and word2
+          const tempWord = currentPair.word1;
+          const tempImage = currentPair.image1;
+          const tempAudio = currentPair.audioPrompt1;
+          
+          currentPair.word1 = currentPair.word2;
+          currentPair.image1 = currentPair.image2;
+          currentPair.audioPrompt1 = currentPair.audioPrompt2;
+          
+          currentPair.word2 = tempWord;
+          currentPair.image2 = tempImage;
+          currentPair.audioPrompt2 = tempAudio;
+          
+          // Update the currentPromptWord to match the swapped positions
+          if (currentPromptWord === tempWord) {
+            // If the current prompt was word1, now it will be word2
+            setCurrentPromptWord(currentPair.word1);
+          } else if (currentPromptWord === currentPair.word2) {
+            // If the current prompt was word2, now it will be word1
+            setCurrentPromptWord(currentPair.word2);
+          }
+          
+          newPairs[currentPairIndex] = currentPair;
+          return newPairs;
+        });
+      } catch (error) {
+        console.error('Error swapping word pairs:', error);
+      }
     }
     
     // Reset timer for response time measurement
     startTimeRef.current = Date.now();
     
-    // Play the audio prompt again
-    const pair = currentPairRef.current;
-    const promptAudio = pair.word1 === currentPromptWord 
-      ? pair.audioPrompt1 
-      : pair.audioPrompt2;
+    // Get the updated pair after swapping
+    const pair = wordPairs[currentPairIndex];
+    if (pair) {
+      currentPairRef.current = pair;
+    }
+    
+    // Play the audio prompt again - using currentPairRef.current for safety
+    const currentPair = currentPairRef.current;
+    if (!currentPair) return;
+    
+    const promptAudio = currentPair.word1 === currentPromptWord 
+      ? currentPair.audioPrompt1 
+      : currentPair.audioPrompt2;
     
     // Always play audio on retry - this is important feedback
     audioService.playWordPrompt(promptAudio);
@@ -207,7 +257,7 @@ export const useGameState = (): GameStateData => {
       // Go back to selection state
       setGameStatus('selection');
     }, 500);
-  }, [currentPromptWord, state.isAudioEnabled, isRetry]);
+  }, [currentPromptWord, state.isAudioEnabled, isRetry, currentPairIndex, wordPairs]);
 
   // Handle replay button click (just plays audio again)
   const handleReplay = useCallback(() => {
@@ -278,7 +328,8 @@ export const useGameState = (): GameStateData => {
       return;
     }
     
-    // Move to next pair after a delay
+    // Move to next pair after a longer delay to allow celebration animation to complete
+    // 4000ms = 0.5s feedback delay + 3s animation + 0.5s buffer
     const timer = setTimeout(() => {
       if (currentPairIndex >= wordPairs.length - 1) {
         // End of game
@@ -301,7 +352,7 @@ export const useGameState = (): GameStateData => {
         setIsRetry(false); // Reset retry flag for next pair
         setGameStatus('prompt');
       }
-    }, 2000);
+    }, 4000);
     
     return () => clearTimeout(timer);
   }, [gameStatus, currentPairIndex, currentPromptWord, currentPair, wordPairs.length, sessionId, state.isAudioEnabled, isRetry]);

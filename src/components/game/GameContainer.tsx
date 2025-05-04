@@ -35,7 +35,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
 
   // Track if we should show the celebration animation
   const [showCelebration, setShowCelebration] = useState(false);
-
+  
   const {
     wordPairs,
     currentPairIndex,
@@ -50,6 +50,11 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     handleRetry,
     handleNextLevel,
   } = gameState;
+  
+  // Reset celebration when moving to a new word pair
+  useEffect(() => {
+    setShowCelebration(false);
+  }, [currentPairIndex]);
 
   // Custom word selection handler to show celebration animation
   const handleWordSelection = (word: string) => {
@@ -58,6 +63,9 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     const isAnswer = word === gameState.currentPromptWord;
     const isFirstAttempt = !gameState.isRetry;
 
+    // Reset celebration state first to ensure it can be triggered again
+    setShowCelebration(false);
+
     // Call the original handler
     const result = gameState.handleWordSelection(word);
 
@@ -65,7 +73,12 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     if (isAnswer && isFirstAttempt) {
       // Slight delay to let the feedback show first
       setTimeout(() => {
-        setShowCelebration(true);
+        try {
+          setShowCelebration(true);
+        } catch (error) {
+          console.error('Error showing celebration:', error);
+          // Still allow the game to continue even if celebration fails
+        }
       }, 500);
     }
 
@@ -100,7 +113,12 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
 
   // Handle celebration animation completion
   const handleCelebrationComplete = useCallback(() => {
-    setShowCelebration(false);
+    // Use a try-catch to prevent any errors from propagating
+    try {
+      setShowCelebration(false);
+    } catch (error) {
+      console.error('Error in handleCelebrationComplete:', error);
+    }
   }, []);
 
   // Render the appropriate game content based on the current status
@@ -186,7 +204,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
             text="Replay Word"
             icon="🔊"
             x={width / 2}
-            y={height - 90} /* Moved up to accommodate progress bar spacing */
+            y={height - 105} /* Moved up more to accommodate taller progress bar */
             onClick={onReplayClick}
             width={220}
             fontSize={22}
@@ -200,21 +218,21 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
             isCorrect={isCorrect}
             isRetry={isRetry}
             x={width / 2}
-            y={height - 160} /* Moved higher to prevent overlap with progress bar */
-            onRetry={onRetryClick}
+            y={height - 175} /* Moved even higher to prevent overlap with taller progress bar */
+            onRetry={onRetryClick || undefined}
             emojiSize={48}
             textSize={20}
           />
         )}
 
-        {/* Progress indicator - positioned at bottom with clear margin */}
+        {/* Progress indicator - positioned at bottom with increased margin */}
         <ProgressIndicator
           current={currentPairIndex + 1}
           total={wordPairs.length}
           x={width / 2}
-          y={height - 25} /* Closer to bottom but with some margin */
+          y={height - 40} /* Increased margin from bottom */
           width={width * 0.8}
-          height={12} /* Slightly smaller height for sleeker appearance */
+          height={26} /* Taller progress bar for better visibility */
         />
       </Container>
     );

@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Container, Sprite } from '@pixi/react';
+import { Container, Sprite, Text } from '@pixi/react';
 import { useAppContext } from '../../../context/AppContext';
 import * as PIXI from 'pixi.js';
 
 // Animation configuration
 const CONFETTI_COUNT = 100;
-const ANIMATION_DURATION = 3000; // 3 seconds
+const ANIMATION_DURATION = 3000; // 3 seconds - coordinated with the timing in useGameState.ts
 const MIN_SIZE = 10;
 const MAX_SIZE = 30;
 const GRAVITY = 0.2;
@@ -68,7 +68,6 @@ const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
   const { state } = useAppContext();
   const [confetti, setConfetti] = useState<Confetti[]>([]);
   const [isActive, setIsActive] = useState(true);
-  const [showText, setShowText] = useState(false);
   
   // Skip animation if animations are disabled in preferences
   const skipAnimation = !state.enableAnimations;
@@ -82,70 +81,80 @@ const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
       return;
     }
     
-    setConfetti(generateConfetti(width, height));
+    // Reset state when the component mounts
+    setIsActive(true);
     
-    // Show the "Great job!" text after 500ms
-    const textTimer = setTimeout(() => {
-      setShowText(true);
-    }, 500);
+    // Generate initial confetti
+    setConfetti(generateConfetti(width, height));
     
     // End the animation after the duration
     const animationTimer = setTimeout(() => {
       setIsActive(false);
+      // Make sure we always call onComplete, even if there's an error
       if (onComplete) {
-        onComplete();
+        try {
+          onComplete();
+        } catch (e) {
+          console.error('Error in animation completion handler:', e);
+        }
       }
     }, ANIMATION_DURATION);
     
     return () => {
-      clearTimeout(textTimer);
       clearTimeout(animationTimer);
     };
   }, [width, height, onComplete, skipAnimation]);
   
-  // Update confetti positions
-  const updateConfetti = useCallback(() => {
-    if (!isActive) return;
+  // Update confetti positions with a simple approach that doesn't use state updates
+  // This prevents excessive re-renders that might cause the errors
+  const animationRef = React.useRef<number>();
+  const confettiRef = React.useRef<Confetti[]>([]);
+  
+  useEffect(() => {
+    if (skipAnimation || !isActive) return;
     
-    setConfetti(prevConfetti => 
-      prevConfetti.map(c => ({
+    // Initial confetti
+    confettiRef.current = generateConfetti(width, height);
+    
+    // Animation function that doesn't use setState during the animation
+    const animate = () => {
+      if (!isActive) return;
+      
+      // Update positions directly in the ref
+      confettiRef.current = confettiRef.current.map(c => ({
         ...c,
         x: c.x + c.speedX,
         y: c.y + c.speedY + GRAVITY,
         rotation: c.rotation + c.rotationSpeed,
         speedY: c.speedY + GRAVITY,
-      }))
-    );
-  }, [isActive]);
-  
-  // Set up animation frame
-  useEffect(() => {
-    if (skipAnimation) return;
-    
-    let animationFrameId: number;
-    
-    const animate = () => {
-      updateConfetti();
-      animationFrameId = requestAnimationFrame(animate);
+      }));
+      
+      // Update the state less frequently to avoid re-render issues
+      setConfetti([...confettiRef.current]);
+      
+      // Continue animation
+      animationRef.current = requestAnimationFrame(animate);
     };
     
-    animate();
+    // Start animation
+    animationRef.current = requestAnimationFrame(animate);
     
+    // Cleanup
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
     };
-  }, [updateConfetti, skipAnimation]);
+  }, [width, height, skipAnimation, isActive]);
   
-  if (skipAnimation) return null;
-  
-  if (!isActive) return null;
+  if (skipAnimation || !isActive) return null;
   
   return (
     <Container>
       {/* Confetti particles */}
       {confetti.map((c, index) => (
         <Sprite
-          key={index}
+          key={`confetti-${index}`}
           texture={PIXI.Texture.WHITE}
           x={c.x}
           y={c.y}
@@ -157,30 +166,26 @@ const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
         />
       ))}
       
-      {/* Celebration text */}
-      {showText && (
-        <Container position={[width / 2, height / 2 - 50]}> {/* Moved up to avoid interfering with progress bar */}
-          {/* Create the text object manually instead of as JSX element */}
-          {(() => {
-            const textStyle = new PIXI.TextStyle({
+      {/* Celebration text - simplified to avoid issues */}
+      <Container position={[width / 2, height / 2 - 50]}>
+        <Text
+          text={"Great job!"}
+          anchor={0.5}
+          style={
+            new PIXI.TextStyle({
               fontFamily: 'Arial',
               fontSize: 48,
               fontWeight: 'bold',
-              fill: ['#FF9900', '#FF3300'],
+              fill: '#FF9900',
               stroke: '#FFFFFF',
               strokeThickness: 5,
               dropShadow: true,
               dropShadowColor: '#000000',
-              dropShadowBlur: 4,
-              dropShadowAngle: Math.PI / 6,
               dropShadowDistance: 6,
-            });
-            const textObj = new PIXI.Text('Great job!', textStyle);
-            textObj.anchor.set(0.5);
-            return <Sprite texture={textObj.texture} x={0} y={0} anchor={0.5} />;
-          })()}
-        </Container>
-      )}
+            })
+          }
+        />
+      </Container>
     </Container>
   );
 };
