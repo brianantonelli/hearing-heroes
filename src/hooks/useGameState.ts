@@ -181,12 +181,14 @@ export const useGameState = (): GameStateData => {
     setSelectedWord(null);
     setIsCorrect(null);
     
-    // Set retry flag
-    setIsRetry(true);
-    setScore(prev => ({
-      ...prev,
-      retries: prev.retries + 1
-    }));
+    // Set retry flag if not already set
+    if (!isRetry) {
+      setIsRetry(true);
+      setScore(prev => ({
+        ...prev,
+        retries: prev.retries + 1
+      }));
+    }
     
     // Reset timer for response time measurement
     startTimeRef.current = Date.now();
@@ -197,13 +199,15 @@ export const useGameState = (): GameStateData => {
       ? pair.audioPrompt1 
       : pair.audioPrompt2;
     
-    if (state.isAudioEnabled) {
-      audioService.playWordPrompt(promptAudio);
-    }
+    // Always play audio on retry - this is important feedback
+    audioService.playWordPrompt(promptAudio);
     
-    // Go back to selection state
-    setGameStatus('selection');
-  }, [currentPromptWord, state.isAudioEnabled]);
+    // Slight delay to ensure audio is heard before selection is possible
+    setTimeout(() => {
+      // Go back to selection state
+      setGameStatus('selection');
+    }, 500);
+  }, [currentPromptWord, state.isAudioEnabled, isRetry]);
 
   // Handle replay button click (just plays audio again)
   const handleReplay = useCallback(() => {
@@ -268,8 +272,9 @@ export const useGameState = (): GameStateData => {
       }
     }
     
-    // If incorrect and not already a retry, wait for retry
-    if (!correct && !isRetry) {
+    // Only auto-advance if the answer was correct
+    // Otherwise user needs to explicitly press retry or replay
+    if (!correct) {
       return;
     }
     

@@ -79,8 +79,8 @@ const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
   
   const color = isCorrect ? 0x22cc22 : (isRetry ? 0xcc2222 : 0xff8800);
   
-  // Only show retry button on first incorrect attempt
-  const showRetryButton = isCorrect === false && !isRetry && onRetry !== undefined;
+  // Always show retry button on incorrect attempts
+  const showRetryButton = isCorrect === false && onRetry !== undefined;
 
   // If there's no feedback yet (null value), don't render
   if (isCorrect === null) return null;
@@ -122,13 +122,16 @@ const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
           pointerdown={onRetry}
         >
           <Text
-            text="🔊 Listen Again"
+            text="🔊 Try Again"
             anchor={0.5}
             style={new PIXI.TextStyle({
               fill: 0x4287f5,
               fontSize: 24,
               fontFamily: 'Arial',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+              dropShadow: true,
+              dropShadowAlpha: 0.3,
+              dropShadowDistance: 2
             })}
           />
         </Container>

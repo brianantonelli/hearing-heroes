@@ -201,12 +201,13 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
         {/* Replay button */}
         {gameStatus === 'selection' && (
           <GameButton 
-            text="Replay"
+            text="Replay Word"
             icon="🔊"
             x={width / 2}
             y={height - 60}
             onClick={onReplayClick}
-            width={150}
+            width={220}
+            fontSize={22}
           />
         )}
         
