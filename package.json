@@ -1,0 +1,44 @@
+{
+  "name": "hearing-heroes",
+  "version": "0.1.0",
+  "description": "Interactive speech discrimination game for children with hearing impairments",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "keywords": [
+    "speech-therapy",
+    "hearing",
+    "game",
+    "education",
+    "cochlear-implant"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@pixi/react": "^7.1.1",
+    "pixi.js": "^7.3.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "recharts": "^2.10.1",
+    "idb": "^7.1.1",
+    "yaml": "^2.3.4"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "eslint": "^8.54.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.4",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.0",
+    "vite-plugin-pwa": "^0.17.0"
+  }
+}
