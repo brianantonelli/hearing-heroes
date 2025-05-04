@@ -16,6 +16,8 @@ export interface PracticeResult {
   timestamp: number;     // When this practice happened (Unix timestamp)
   contrastType: ContrastType; // Type of contrast in this practice
   difficultyLevel: number; // Difficulty level of this practice
+  isRetry: boolean;      // Whether this was a retry attempt
+  attemptCount: number;  // Which attempt number (1 = first try, 2 = retry)
 }
 
 // Represents a practice session
@@ -26,6 +28,8 @@ export interface PracticeSession {
   difficultyLevel: number; // Difficulty level for this session
   totalPractices: number; // Total number of practices in this session
   correctPractices: number; // Number of correct practices
+  retryCount: number;    // Number of retries used
+  successfulRetries: number; // Number of successful retries (correct on second attempt)
   averageResponseTimeMs: number; // Average response time in milliseconds
   contrastTypes: ContrastType[]; // Types of contrasts practiced in this session
 }
@@ -36,6 +40,8 @@ export interface ContrastStatistics {
   totalPractices: number;    // Total number of practices with this contrast
   correctPractices: number;  // Number of correct practices
   accuracyPercentage: number; // Accuracy as a percentage
+  retryCount: number;        // Number of retries for this contrast type
+  retrySuccessRate: number;  // Success rate of retries for this contrast type
   averageResponseTimeMs: number; // Average response time in milliseconds
 }
 
@@ -45,6 +51,9 @@ export interface OverallStatistics {
   totalPractices: number;   // Total number of practices across all sessions
   correctPractices: number; // Total number of correct practices
   accuracyPercentage: number; // Overall accuracy as a percentage
+  totalRetries: number;     // Total number of retries across all sessions
+  successfulRetries: number; // Total number of successful retries
+  retrySuccessRate: number; // Success rate of retries as a percentage
   averageResponseTimeMs: number; // Overall average response time in milliseconds
   contrastStatistics: ContrastStatistics[]; // Statistics broken down by contrast type
   progressByLevel: { level: number; accuracy: number }[]; // Progress by difficulty level

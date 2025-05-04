@@ -18,14 +18,21 @@ An iPad-based game to help Samantha practice consonant manner contrasts for spee
    - Audio management system
    - Data storage/retrieval layer (IndexedDB)
    - Analytics/metrics tracking
+   - Modular, reusable UI components
 
-2. **Game Features**:
+2. **Component Architecture**:
+   - Small, focused components with single responsibility
+   - Clear component hierarchy and composition
+   - Shared components library for consistency
+   - Separation of UI components from game logic
+
+3. **Game Features**:
    - Level progression system
    - Consonant pair configuration
    - Scoring/feedback mechanisms
    - Visual reward system
 
-3. **Parent Dashboard**:
+4. **Parent Dashboard**:
    - Authentication (basic multiplication question, e.g., "What's 2x8?")
    - Performance metrics visualization
    - Session history
@@ -42,6 +49,7 @@ An iPad-based game to help Samantha practice consonant manner contrasts for spee
 - Audio prompts with image pairs (e.g., cave/wave)
 - Touch interaction for selection
 - Immediate visual/audio feedback
+- Second chance opportunity on incorrect answers
 - Progressive difficulty levels
 
 ### Level Progression
@@ -54,6 +62,7 @@ An iPad-based game to help Samantha practice consonant manner contrasts for spee
 - Accuracy percentage
 - Response time
 - Progress across specific contrast types
+- Retry count and success rate
 - Session duration and frequency
 
 ## Technical Implementation

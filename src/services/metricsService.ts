@@ -25,6 +25,8 @@ export class MetricsService {
       difficultyLevel,
       totalPractices: 0,
       correctPractices: 0,
+      retryCount: 0,
+      successfulRetries: 0,
       averageResponseTimeMs: 0,
       contrastTypes: [],
     };
@@ -64,18 +66,26 @@ export class MetricsService {
   /**
    * Record a practice result
    * 
-   * @param wordPair - The word pair that was practiced
-   * @param selectedWord - The word that was selected by the user
-   * @param targetWord - The word that was the correct answer
-   * @param responseTimeMs - How long it took to respond in milliseconds
+   * @param data - Object containing practice result data
    * @returns The recorded practice result
    */
-  async recordPractice(
-    wordPair: WordPair,
-    selectedWord: string,
-    targetWord: string,
-    responseTimeMs: number
-  ): Promise<PracticeResult> {
+  async recordPractice(data: {
+    wordPair: WordPair;
+    selectedWord: string;
+    targetWord: string;
+    responseTimeMs: number;
+    isRetry?: boolean;
+    attemptCount?: number;
+  }): Promise<PracticeResult> {
+    const { 
+      wordPair, 
+      selectedWord, 
+      targetWord, 
+      responseTimeMs,
+      isRetry = false,
+      attemptCount = 1
+    } = data;
+
     // Make sure we have an active session
     if (!this.currentSession) {
       throw new Error('No active session. Call startSession first.');
@@ -94,6 +104,8 @@ export class MetricsService {
       timestamp: Date.now(),
       contrastType: wordPair.contrastType,
       difficultyLevel: wordPair.difficultyLevel,
+      isRetry,
+      attemptCount
     };
     
     // Save the result
@@ -103,6 +115,20 @@ export class MetricsService {
     this.currentSession.totalPractices += 1;
     if (isCorrect) {
       this.currentSession.correctPractices += 1;
+    }
+    
+    // Update retry statistics if applicable
+    if (isRetry) {
+      // Initialize retry fields if they don't exist yet
+      if (!('retryCount' in this.currentSession)) {
+        this.currentSession.retryCount = 0;
+        this.currentSession.successfulRetries = 0;
+      }
+      
+      this.currentSession.retryCount = (this.currentSession.retryCount || 0) + 1;
+      if (isCorrect) {
+        this.currentSession.successfulRetries = (this.currentSession.successfulRetries || 0) + 1;
+      }
     }
     
     // Update average response time
