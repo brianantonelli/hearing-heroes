@@ -200,11 +200,19 @@ export class DBService {
       const totalResponseTime = results.reduce((sum, result) => sum + result.responseTimeMs, 0);
       const averageResponseTimeMs = totalPractices > 0 ? totalResponseTime / totalPractices : 0;
       
+      // Calculate retry statistics
+      const retries = results.filter(result => result.isRetry);
+      const retryCount = retries.length;
+      const successfulRetries = retries.filter(result => result.isCorrect).length;
+      const retrySuccessRate = retryCount > 0 ? (successfulRetries / retryCount) * 100 : 0;
+      
       contrastStatistics.push({
         contrastType,
         totalPractices,
         correctPractices,
         accuracyPercentage,
+        retryCount,
+        retrySuccessRate,
         averageResponseTimeMs,
       });
     });
@@ -233,11 +241,19 @@ export class DBService {
     const lastSession = completedSessions.sort((a, b) => (b.endTime || 0) - (a.endTime || 0))[0];
     const lastSessionTimestamp = lastSession ? lastSession.endTime : null;
     
+    // Calculate overall retry statistics
+    const totalRetries = allResults.filter(result => result.isRetry).length;
+    const successfulRetries = allResults.filter(result => result.isRetry && result.isCorrect).length;
+    const retrySuccessRate = totalRetries > 0 ? (successfulRetries / totalRetries) * 100 : 0;
+
     return {
       totalSessions,
       totalPractices,
       correctPractices,
       accuracyPercentage,
+      totalRetries,
+      successfulRetries,
+      retrySuccessRate,
       averageResponseTimeMs,
       contrastStatistics,
       progressByLevel,
