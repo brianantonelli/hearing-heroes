@@ -173,6 +173,48 @@ export const useGameState = (): GameStateData => {
     }
   }, [gameStatus, wordPairs, currentPairIndex, state.isAudioEnabled]);
 
+  // Handle skipping to the next word pair
+  const handleSkip = useCallback(() => {
+    // Record the practice as skipped
+    if (sessionId && currentPair) {
+      try {
+        metricsService.recordPractice({
+          wordPair: currentPair,
+          selectedWord: "skipped",
+          targetWord: currentPromptWord || "",
+          responseTimeMs: 0,
+          isRetry,
+          attemptCount: isRetry ? 2 : 1
+        }).catch(console.error);
+      } catch (error) {
+        console.error('Error recording skipped practice:', error);
+      }
+    }
+    
+    // Check if this is the last pair
+    if (currentPairIndex >= wordPairs.length - 1) {
+      // End of game
+      setGameStatus('complete');
+      
+      // End the session
+      if (sessionId) {
+        metricsService.endSession().catch(console.error);
+      }
+      
+      // Play level complete sound
+      if (state.isAudioEnabled) {
+        audioService.playLevelCompleteSound();
+      }
+    } else {
+      // Move to next pair
+      setCurrentPairIndex(prev => prev + 1);
+      setSelectedWord(null);
+      setIsCorrect(null);
+      setIsRetry(false); // Reset retry flag for next pair
+      setGameStatus('prompt');
+    }
+  }, [currentPair, currentPairIndex, currentPromptWord, wordPairs.length, sessionId, state.isAudioEnabled, isRetry]);
+
   // Handle retry of the current prompt
   const handleRetry = useCallback(() => {
     if (!currentPromptWord || !currentPairRef.current) return;
@@ -386,6 +428,7 @@ export const useGameState = (): GameStateData => {
     handleWordSelection,
     handleReplay,
     handleRetry,
+    handleSkip, // Add the skip function
     handleNextLevel,
     progressPercentage
   };

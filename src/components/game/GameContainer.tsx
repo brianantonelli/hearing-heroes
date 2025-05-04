@@ -48,6 +48,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     score,
     handleReplay,
     handleRetry,
+    handleSkip,
     handleNextLevel,
   } = gameState;
   
@@ -94,6 +95,11 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
   const onRetryClick = useCallback(() => {
     handleRetry();
   }, [handleRetry]);
+  
+  // Handle skip to next word
+  const onSkipClick = useCallback(() => {
+    handleSkip();
+  }, [handleSkip]);
 
   // Continue to next level or home screen
   const onContinueClick = useCallback(() => {
@@ -228,6 +234,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
             x={width / 2}
             y={height - 220} /* Moved even higher for the much taller button */
             onRetry={onRetryClick || undefined}
+            onSkip={onSkipClick || undefined} /* Add skip handler */
             emojiSize={54} /* Larger emoji for better visibility */
             textSize={22} /* Larger text for better readability */
           />
