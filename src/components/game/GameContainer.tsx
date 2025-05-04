@@ -97,9 +97,16 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
 
   // Continue to next level or home screen
   const onContinueClick = useCallback(() => {
-    handleNextLevel();
-    // Return to home screen
-    window.location.href = '/';
+    // Call handleNextLevel to potentially increase the level
+    const movedToNextLevel = handleNextLevel();
+    
+    if (movedToNextLevel) {
+      // If we advanced to a new level, reload the game page to start the new level
+      window.location.reload();
+    } else {
+      // Otherwise return to home screen
+      window.location.href = '/';
+    }
   }, [handleNextLevel]);
 
   // Handle level selection

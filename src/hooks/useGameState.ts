@@ -364,9 +364,12 @@ export const useGameState = (): GameStateData => {
       ? (score.correct / score.total) * 100 
       : 0;
       
+    // Return true if we're advancing to a new level, false otherwise
     if (accuracy >= 80 && state.currentLevel < 4) {
       dispatch({ type: 'SET_LEVEL', payload: state.currentLevel + 1 });
+      return true; // Level was increased
     }
+    return false; // Level stays the same
   }, [score.correct, score.total, state.currentLevel, dispatch]);
 
   return {

@@ -32,16 +32,21 @@ const CompleteScreen: React.FC<CompleteScreenProps> = ({
     ? Math.round((score.successfulRetries / score.retries) * 100)
     : 0;
   
-  // Determine message based on accuracy
+  // Determine message and emoji based on accuracy
   let message = "";
+  let emoji = "";
   if (accuracy >= 90) {
-    message = "Amazing job! 🌟";
+    message = "Amazing job!";
+    emoji = "🌟";
   } else if (accuracy >= 80) {
-    message = "Great job! 🎉";
+    message = "Great job!";
+    emoji = "🎉";
   } else if (accuracy >= 60) {
-    message = "Good effort! 👍";
+    message = "Good effort!";
+    emoji = "👍";
   } else {
-    message = "Keep practicing! 💪";
+    message = "Keep practicing!";
+    emoji = "💪";
   }
   
   return (
@@ -50,10 +55,10 @@ const CompleteScreen: React.FC<CompleteScreenProps> = ({
       <Text
         text="Level Complete!"
         anchor={0.5}
-        y={-100}
+        y={-130}
         style={new PIXI.TextStyle({
           fill: 0x22cc22,
-          fontSize: 36,
+          fontSize: 42,
           fontFamily: 'Arial',
           fontWeight: 'bold',
           dropShadow: true,
@@ -62,14 +67,24 @@ const CompleteScreen: React.FC<CompleteScreenProps> = ({
         })}
       />
       
+      {/* Big emoji for visual reward */}
+      <Text
+        text={emoji}
+        anchor={0.5}
+        y={-80}
+        style={new PIXI.TextStyle({
+          fontSize: 60, // Much bigger emoji for visual impact
+        })}
+      />
+      
       {/* Encouragement message */}
       <Text
         text={message}
         anchor={0.5}
-        y={-50}
+        y={-30}
         style={new PIXI.TextStyle({
           fill: 0x333333,
-          fontSize: 28,
+          fontSize: 32,
           fontFamily: 'Arial',
           fontWeight: 'bold'
         })}
@@ -101,14 +116,17 @@ const CompleteScreen: React.FC<CompleteScreenProps> = ({
         />
       )}
       
-      {/* Continue button */}
+      {/* Continue button - more kid-friendly with prominent emoji */}
       <GameButton 
         text="Continue"
         x={0}
         y={100}
         onClick={onContinue}
-        width={180}
-        icon="→"
+        width={200}
+        fontSize={26}
+        padding={14}
+        backgroundColor={0x22cc22} /* Green color for continue */
+        icon="⏩" /* Fast-forward emoji is more intuitive than arrow */
       />
     </Container>
   );
