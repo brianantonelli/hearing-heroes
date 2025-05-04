@@ -74,6 +74,32 @@ An iPad-based game to help Samantha practice consonant manner contrasts for spee
 - Export functionality for sharing with SLP
 - No cloud synchronization required
 
+### Testing Strategy
+- **Unit Testing**: Test individual components and functions
+  - Jest for test runner and assertions
+  - React Testing Library for component testing
+  - Mock audio functionality for consistent testing
+  
+- **Integration Testing**: Ensure components work together correctly
+  - Test core game flow and interactions
+  - Test data persistence with IndexedDB
+  - Test parent dashboard interactions
+  
+- **Manual Testing**: Focus on real device experience
+  - Testing on target iPad devices
+  - Audio quality and responsiveness testing
+  - Touch interaction validation
+  
+- **Testing Coverage**:
+  - Core game mechanics: 90%+ coverage
+  - Data storage/retrieval: 80%+ coverage
+  - UI components: 70%+ coverage
+  
+- **Testing Artifacts**:
+  - Automated test reports
+  - User testing feedback log
+  - Performance benchmarks
+
 ## Development Phases & Git Strategy
 
 For documentation and to assist other developers in understanding the development process, each major feature will be developed in a dedicated Git branch. This will enable a clear progression through the project and make it easier for others to follow the tutorial.

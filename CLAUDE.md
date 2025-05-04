@@ -16,6 +16,9 @@ HearingHeroes is a speech discrimination game designed for children with hearing
 - `npm run build` - Build production version
 - `npm run lint` - Run ESLint
 - `npm run typecheck` - Run TypeScript type checking
+- `npm test` - Run all tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage report
 
 ## Important Project Areas
 1. **Game Mechanics**: Audio prompts with image pairs (e.g., cave/wave)
@@ -43,11 +46,40 @@ For documenting development progress and enabling others to follow along with th
    - Each phase should be completed with a PR to main
    - PRs should include a summary of changes and testing performed
 
-## Testing Focus
-- Ensure audio works correctly on iPad
-- Verify touch controls are responsive
-- Test offline functionality
-- Validate data persistence
+## Testing Strategy
+
+### Testing Framework
+- Jest for test runner and assertions
+- React Testing Library for component testing
+- Test coverage reporting with Jest
+- Mock audio functionality for consistent testing
+
+### Types of Tests
+1. **Unit Testing**:
+   - Individual components and functions
+   - Service layer (audio, data storage)
+   - Utility functions
+
+2. **Integration Testing**:
+   - Game flow and interactions
+   - Data persistence with IndexedDB
+   - Parent dashboard interactions
+
+3. **Manual Testing**:
+   - Focus on real device experience
+   - Audio quality and responsiveness
+   - Touch interaction validation
+   - iPad-specific behavior
+
+### Test Coverage Goals
+- Core game mechanics: 90%+ coverage
+- Data storage/retrieval: 80%+ coverage
+- UI components: 70%+ coverage
+
+### Testing Commands
+- `npm test` - Run all tests
+- `npm run test:watch` - Run tests in watch mode (development)
+- `npm run test:coverage` - Generate coverage reports
 
 ## Project References
 - Technical specification: `/technical_specification.md`
