@@ -1,37 +1,52 @@
 import { openDB, IDBPDatabase } from 'idb';
 import { PracticeResult, PracticeSession, PracticeResultQuery, OverallStatistics, ContrastStatistics } from '../types/metrics';
 import { ContrastType } from '../types/wordPairs';
+import { Preferences } from '../types/preferences';
 
 const DB_NAME = 'hearing-heroes-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Incrementing version to add the preferences store
 
 // Store names
 const PRACTICE_RESULTS_STORE = 'practiceResults';
 const PRACTICE_SESSIONS_STORE = 'practiceSessions';
+const PREFERENCES_STORE = 'preferences';
 
 // Interface for our database
 interface HearingHeroesDB extends IDBPDatabase {
   [PRACTICE_RESULTS_STORE]: PracticeResult[];
   [PRACTICE_SESSIONS_STORE]: PracticeSession[];
+  [PREFERENCES_STORE]: Preferences;
 }
 
 // Create or open the database
 async function openDatabase(): Promise<HearingHeroesDB> {
   return openDB<HearingHeroesDB>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-      // Create stores if they don't exist
-      if (!db.objectStoreNames.contains(PRACTICE_RESULTS_STORE)) {
-        const practiceResultsStore = db.createObjectStore(PRACTICE_RESULTS_STORE, { keyPath: 'id' });
-        practiceResultsStore.createIndex('sessionId', 'sessionId', { unique: false });
-        practiceResultsStore.createIndex('contrastType', 'contrastType', { unique: false });
-        practiceResultsStore.createIndex('difficultyLevel', 'difficultyLevel', { unique: false });
-        practiceResultsStore.createIndex('timestamp', 'timestamp', { unique: false });
+    upgrade(db, oldVersion) {
+      // Create stores if they don't exist based on version
+      if (oldVersion < 1) {
+        // Version 1 schema creation
+        if (!db.objectStoreNames.contains(PRACTICE_RESULTS_STORE)) {
+          const practiceResultsStore = db.createObjectStore(PRACTICE_RESULTS_STORE, { keyPath: 'id' });
+          practiceResultsStore.createIndex('sessionId', 'sessionId', { unique: false });
+          practiceResultsStore.createIndex('contrastType', 'contrastType', { unique: false });
+          practiceResultsStore.createIndex('difficultyLevel', 'difficultyLevel', { unique: false });
+          practiceResultsStore.createIndex('timestamp', 'timestamp', { unique: false });
+        }
+        
+        if (!db.objectStoreNames.contains(PRACTICE_SESSIONS_STORE)) {
+          const practiceSessionsStore = db.createObjectStore(PRACTICE_SESSIONS_STORE, { keyPath: 'id' });
+          practiceSessionsStore.createIndex('startTime', 'startTime', { unique: false });
+          practiceSessionsStore.createIndex('difficultyLevel', 'difficultyLevel', { unique: false });
+        }
       }
-      
-      if (!db.objectStoreNames.contains(PRACTICE_SESSIONS_STORE)) {
-        const practiceSessionsStore = db.createObjectStore(PRACTICE_SESSIONS_STORE, { keyPath: 'id' });
-        practiceSessionsStore.createIndex('startTime', 'startTime', { unique: false });
-        practiceSessionsStore.createIndex('difficultyLevel', 'difficultyLevel', { unique: false });
+
+      // Version 2 schema - add preferences store
+      if (oldVersion < 2) {
+        if (!db.objectStoreNames.contains(PREFERENCES_STORE)) {
+          // Create preferences store with 'id' as key
+          const preferencesStore = db.createObjectStore(PREFERENCES_STORE, { keyPath: 'id' });
+          preferencesStore.createIndex('lastUpdated', 'lastUpdated', { unique: false });
+        }
       }
     }
   });
@@ -259,6 +274,98 @@ export class DBService {
       progressByLevel,
       lastSessionTimestamp,
     };
+  }
+
+  // Preferences CRUD operations
+
+  /**
+   * Get preferences by ID
+   */
+  async getPreferences(id: string = 'default'): Promise<Preferences | undefined> {
+    const db = await this.db;
+    return db.get(PREFERENCES_STORE, id);
+  }
+
+  /**
+   * Save preferences
+   */
+  async savePreferences(preferences: Preferences): Promise<string> {
+    const db = await this.db;
+    await db.put(PREFERENCES_STORE, preferences);
+    return preferences.id;
+  }
+
+  /**
+   * Update a specific preference value
+   */
+  async updatePreference(key: keyof Preferences, value: any, id: string = 'default'): Promise<void> {
+    const db = await this.db;
+    const tx = db.transaction(PREFERENCES_STORE, 'readwrite');
+    const store = tx.objectStore(PREFERENCES_STORE);
+    
+    // Get current preferences or create default
+    let preferences = await store.get(id);
+    
+    if (!preferences) {
+      // Create default preferences if none exist
+      preferences = {
+        id,
+        childName: 'Samantha',
+        isAudioEnabled: true,
+        currentLevel: 1,
+        maxSessionMinutes: 15,
+        difficultyMultiplier: 1.0,
+        enableAnimations: true,
+        showLevelSelection: false,
+        requireParentAuth: true,
+        lastUpdated: Date.now()
+      };
+    }
+    
+    // Update the specified preference
+    preferences[key] = value;
+    preferences.lastUpdated = Date.now();
+    
+    // Save updated preferences
+    await store.put(preferences);
+    await tx.done;
+  }
+
+  /**
+   * Clear all practice data but keep preferences
+   */
+  async clearPracticeData(): Promise<void> {
+    const db = await this.db;
+    
+    // Clear practice results
+    const resultsTx = db.transaction(PRACTICE_RESULTS_STORE, 'readwrite');
+    await resultsTx.objectStore(PRACTICE_RESULTS_STORE).clear();
+    await resultsTx.done;
+    
+    // Clear practice sessions
+    const sessionsTx = db.transaction(PRACTICE_SESSIONS_STORE, 'readwrite');
+    await sessionsTx.objectStore(PRACTICE_SESSIONS_STORE).clear();
+    await sessionsTx.done;
+  }
+
+  /**
+   * Clear all data including preferences
+   */
+  async clearAllData(): Promise<void> {
+    const db = await this.db;
+    
+    // Clear all stores
+    const resultsTx = db.transaction(PRACTICE_RESULTS_STORE, 'readwrite');
+    await resultsTx.objectStore(PRACTICE_RESULTS_STORE).clear();
+    await resultsTx.done;
+    
+    const sessionsTx = db.transaction(PRACTICE_SESSIONS_STORE, 'readwrite');
+    await sessionsTx.objectStore(PRACTICE_SESSIONS_STORE).clear();
+    await sessionsTx.done;
+    
+    const prefTx = db.transaction(PREFERENCES_STORE, 'readwrite');
+    await prefTx.objectStore(PREFERENCES_STORE).clear();
+    await prefTx.done;
   }
 }
 
