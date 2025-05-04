@@ -1,7 +1,7 @@
-# CLAUDE.md - HearingHeroes Project Guide
+# CLAUDE.md - Hearing Heroes Project Guide
 
 ## Project Overview
-HearingHeroes is a speech discrimination game designed for children with hearing impairments, particularly those with cochlear implants. The game focuses on consonant manner contrasts through interactive audio-visual exercises.
+Hearing Heroes is a speech discrimination game designed for children with hearing impairments, particularly those with cochlear implants. The game focuses on consonant manner contrasts through interactive audio-visual exercises.
 
 ## Technical Stack
 - TypeScript

@@ -1,6 +1,6 @@
 {
-  "name": "HearingHeroes",
-  "short_name": "HearingHeroes",
+  "name": "Hearing Heroes",
+  "short_name": "Hearing Heroes",
   "description": "Speech discrimination practice for children with hearing impairments",
   "start_url": "/",
   "display": "standalone",

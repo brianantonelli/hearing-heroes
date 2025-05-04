@@ -10,28 +10,28 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'HearingHeroes',
-        short_name: 'HearingHeroes',
+        name: 'Hearing Heroes',
+        short_name: 'Hearing Heroes',
         description: 'Interactive speech discrimination game for children with hearing impairments',
         theme_color: '#ffffff',
         icons: [
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
           },
           {
             src: 'pwa-512x512.png',
             sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      }
-    })
+            type: 'image/png',
+          },
+        ],
+      },
+    }),
   ],
   resolve: {
     alias: {
-      '@': '/src'
-    }
-  }
-})
+      '@': '/src',
+    },
+  },
+});

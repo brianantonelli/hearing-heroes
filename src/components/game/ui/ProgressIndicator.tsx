@@ -23,7 +23,7 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   x, 
   y, 
   width = 200, 
-  height = 20, 
+  height = 26, 
   backgroundColor = 0xdddddd, 
   fillColor = 0x4287f5, 
   textColor = 0x333333 
@@ -36,8 +36,8 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   const drawBackground = React.useCallback((g: PIXI.Graphics) => {
     g.clear();
     g.beginFill(backgroundColor);
-    g.lineStyle(1, 0x000000, 0.1);
-    g.drawRoundedRect(-width/2, -height/2, width, height, height / 2);
+    g.lineStyle(3, 0x000000, 0.2); // Thicker border with slightly more opacity
+    g.drawRoundedRect(-width/2, -height/2, width, height, height / 4);
     g.endFill();
   }, [backgroundColor, width, height]);
   
@@ -49,13 +49,19 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
       // Make sure the rounded corners match properly
       if (fillPercentage < 1) {
         // Use simpler version without corner radius options
-        g.drawRoundedRect(-width/2, -height/2, fillWidth, height, height / 2);
+        g.drawRoundedRect(-width/2, -height/2, fillWidth, height, height / 4);
       } else {
-        g.drawRoundedRect(-width/2, -height/2, fillWidth, height, height / 2);
+        g.drawRoundedRect(-width/2, -height/2, fillWidth, height, height / 4);
       }
       g.endFill();
     }
   }, [fillColor, width, height, fillWidth, fillPercentage]);
+  
+  // Determine if the text should be white based on progress
+  const shouldUseWhiteText = fillPercentage > 0.5;
+  
+  // Text color changes to white when progress is past 50%
+  const progressTextColor = shouldUseWhiteText ? 0xffffff : textColor;
   
   return (
     <Container position={[x, y]}>
@@ -70,10 +76,14 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
         text={`${current}/${total}`}
         anchor={0.5}
         style={new PIXI.TextStyle({
-          fill: textColor,
-          fontSize: 14,
+          fill: progressTextColor,
+          fontSize: 16,
           fontFamily: 'Arial',
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          dropShadow: true,
+          dropShadowAlpha: 0.3,
+          dropShadowDistance: 1,
+          dropShadowColor: shouldUseWhiteText ? 0x000000 : 0xffffff
         })}
       />
     </Container>
