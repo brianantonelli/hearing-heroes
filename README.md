@@ -1,6 +1,6 @@
-# HearingHeroes
+# Hearing Heroes
 
-Interactive speech discrimination game for children with hearing impairments, particularly those with cochlear implants.
+Interactive speech discrimination game for children with hearing impairments, particularly those with cochlear implants. This project was written from scratch by Claude Code with human feedback throughout the entire process.
 
 ## Project Overview
 
