@@ -39,11 +39,7 @@ const Home: React.FC = () => {
 
       <footer className="mt-8 w-full flex justify-between items-center px-2">
         <div className="sound-toggle">{/* Sound toggle button will go here */}</div>
-        <button
-          className="bg-gray-200 p-4 rounded-full hover:bg-gray-300 transition-colors text-2xl shadow"
-          onClick={handleParentArea}
-          aria-label="Parent Area"
-        >
+        <button className="text-4xl shadow" onClick={handleParentArea} aria-label="Parent Area">
           ⚙️
         </button>
       </footer>

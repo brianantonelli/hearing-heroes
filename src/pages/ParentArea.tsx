@@ -13,6 +13,7 @@ import SessionDetails from '../components/dashboard/SessionDetails';
 import OverallStats from '../components/dashboard/OverallStats';
 import ExportButton from '../components/dashboard/ExportButton';
 import PreferencesScreen from '../components/dashboard/PreferencesScreen';
+import WordsByTypeScreen from '../components/dashboard/WordsByTypeScreen';
 
 // Simple multiplication question for authentication
 const ParentAuth: React.FC<{ onAuthenticate: () => void }> = ({ onAuthenticate }) => {
@@ -100,7 +101,7 @@ const ParentAuth: React.FC<{ onAuthenticate: () => void }> = ({ onAuthenticate }
 };
 
 // Dashboard view types
-type DashboardView = 'overview' | 'sessions' | 'sessionDetails' | 'preferences';
+type DashboardView = 'overview' | 'sessions' | 'sessionDetails' | 'preferences' | 'wordsByType';
 
 // Parent Dashboard component
 const Dashboard: React.FC = () => {
@@ -171,7 +172,20 @@ const Dashboard: React.FC = () => {
             </div>
 
             {overallStats ? (
-              <OverallStats stats={overallStats} />
+              <>
+                <OverallStats stats={overallStats} />
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={() => setCurrentView('wordsByType')}
+                    className="text-blue-600 hover:text-blue-800 underline flex items-center"
+                  >
+                    <span>View detailed word analysis</span>
+                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              </>
             ) : (
               <div className="bg-white p-6 rounded-lg shadow">
                 <p className="text-gray-600">No progress data available yet.</p>
@@ -228,6 +242,9 @@ const Dashboard: React.FC = () => {
         
       case 'preferences':
         return <PreferencesScreen />;
+
+      case 'wordsByType':
+        return <WordsByTypeScreen />;
     }
   };
   
@@ -273,6 +290,20 @@ const Dashboard: React.FC = () => {
                   }}
                 >
                   Sessions
+                </button>
+              </li>
+              <li className="mr-1">
+                <button 
+                  className={`inline-block py-2 px-4 ${
+                    currentView === 'wordsByType' 
+                      ? 'border-b-2 border-blue-500 text-blue-600 font-medium'
+                      : 'text-gray-600 hover:text-blue-600'
+                  }`}
+                  onClick={() => {
+                    setCurrentView('wordsByType');
+                  }}
+                >
+                  Words Analysis
                 </button>
               </li>
               <li className="mr-1">
