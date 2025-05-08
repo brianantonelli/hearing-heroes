@@ -70,7 +70,6 @@ npm run dev
 - Accuracy percentage
 - Response time
 - Progress across specific contrast types
-- Retry counts and success rates
 - Session duration and frequency
 
 ## Development

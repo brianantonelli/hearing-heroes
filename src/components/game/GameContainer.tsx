@@ -35,7 +35,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
 
   // Track if we should show the celebration animation
   const [showCelebration, setShowCelebration] = useState(false);
-  
+
   const {
     wordPairs,
     currentPairIndex,
@@ -44,14 +44,11 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     selectedWord,
     gameStatus,
     isCorrect,
-    isRetry,
     score,
     handleReplay,
-    handleRetry,
-    handleSkip,
     handleNextLevel,
   } = gameState;
-  
+
   // Reset celebration when moving to a new word pair
   useEffect(() => {
     setShowCelebration(false);
@@ -62,7 +59,6 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     // We need to check if the word matches the current prompt word
     // before calling the original handler, because it will change state
     const isAnswer = word === gameState.currentPromptWord;
-    const isFirstAttempt = !gameState.isRetry;
 
     // Reset celebration state first to ensure it can be triggered again
     setShowCelebration(false);
@@ -70,8 +66,8 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     // Call the original handler
     const result = gameState.handleWordSelection(word);
 
-    // If this is a correct answer on first attempt, show celebration
-    if (isAnswer && isFirstAttempt) {
+    // If this is a correct answer  show celebration
+    if (isAnswer) {
       // Slight delay to let the feedback show first
       setTimeout(() => {
         try {
@@ -91,21 +87,11 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     handleReplay();
   }, [handleReplay]);
 
-  // Handle retry attempt
-  const onRetryClick = useCallback(() => {
-    handleRetry();
-  }, [handleRetry]);
-  
-  // Handle skip to next word
-  const onSkipClick = useCallback(() => {
-    handleSkip();
-  }, [handleSkip]);
-
   // Continue to next level or home screen
   const onContinueClick = useCallback(() => {
     // Call handleNextLevel to potentially increase the level
     const movedToNextLevel = handleNextLevel();
-    
+
     if (movedToNextLevel) {
       // If we advanced to a new level, reload the game page to start the new level
       window.location.reload();
@@ -137,7 +123,9 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
   // Render the appropriate game content based on the current status
   const renderGameContent = () => {
     if (wordPairs.length === 0) {
-      return <GamePrompt text="Loading word pairs..." x={width / 2} y={height / 2} fontSize={24} />;
+      return (
+        <GamePrompt text="✨ Loading Word Pairs ✨" x={width / 2} y={height / 2} fontSize={24} />
+      );
     }
 
     // Show level select before intro if enabled in preferences
@@ -168,18 +156,18 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     // Determine layout based on screen dimensions
     const isHorizontal = width > height;
     const imageSize = isHorizontal
-      ? Math.min(width * 0.4, height * 0.6)
-      : Math.min(width * 0.6, height * 0.4);
+      ? Math.min(width * 0.3, height * 0.5)
+      : Math.min(width * 0.5, height * 0.3);
 
     // Position the images based on orientation
     const imagePositions = isHorizontal
       ? [
-          { x: width * 0.25, y: height / 2 }, // Left
-          { x: width * 0.75, y: height / 2 }, // Right
+          { x: width * 0.25, y: height / 2.5 }, // Left
+          { x: width * 0.75, y: height / 2.5 }, // Right
         ]
       : [
-          { x: width / 2, y: height * 0.3 }, // Top
-          { x: width / 2, y: height * 0.7 }, // Bottom
+          { x: width / 2, y: height * 0.25 }, // Top
+          { x: width / 2, y: height * 0.65 }, // Bottom
         ];
 
     return (
@@ -190,6 +178,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
         {/* Word images */}
         <WordImage
           imagePath={image1Path}
+          word={currentPair.word1}
           x={imagePositions[0].x}
           y={imagePositions[0].y}
           width={imageSize}
@@ -201,6 +190,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
         />
         <WordImage
           imagePath={image2Path}
+          word={currentPair.word2}
           x={imagePositions[1].x}
           y={imagePositions[1].y}
           width={imageSize}
@@ -217,12 +207,12 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
             text="Listen Again"
             icon="🔊"
             x={width / 2}
-            y={height - 120} /* Moved up more to accommodate taller button */
+            y={height - 105} /* Moved up more to accommodate taller button */
             onClick={onReplayClick}
             width={180}
-            fontSize={24}
-            padding={12}
-            backgroundColor={0x4CAF50} /* Green color for better visibility */
+            fontSize={22}
+            padding={10}
+            backgroundColor={0x4caf50} /* Green color for better visibility */
           />
         )}
 
@@ -230,11 +220,8 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
         {gameStatus === 'feedback' && isCorrect !== null && (
           <FeedbackMessage
             isCorrect={isCorrect}
-            isRetry={isRetry}
             x={width / 2}
             y={height - 220} /* Moved even higher for the much taller button */
-            onRetry={onRetryClick || undefined}
-            onSkip={onSkipClick || undefined} /* Add skip handler */
             emojiSize={70} /* Even larger emoji for better visibility and impact */
             textSize={26} /* Larger text for better readability */
           />
@@ -245,7 +232,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
           current={currentPairIndex + 1}
           total={wordPairs.length}
           x={width / 2}
-          y={height - 40} /* Increased margin from bottom */
+          y={height - 20} /* Increased margin from bottom */
           width={width * 0.8}
           height={26} /* Taller progress bar for better visibility */
         />

@@ -18,7 +18,6 @@ export interface GameStateData {
   selectedWord: string | null;
   gameStatus: GameStatus;
   isCorrect: boolean | null;
-  isRetry: boolean;
   score: {
     correct: number;
     total: number;
@@ -28,7 +27,6 @@ export interface GameStateData {
   sessionId: string | null;
   handleWordSelection: (word: string) => void;
   handleReplay: () => void;
-  handleRetry: () => void;
   handleNextLevel: () => void;
   progressPercentage: number;
 }
@@ -48,19 +46,19 @@ export const useGameState = (): GameStateData => {
     correct: 0,
     total: 0,
     retries: 0,
-    successfulRetries: 0
+    successfulRetries: 0,
   });
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [isRetry, setIsRetry] = useState(false);
-  
+
   const startTimeRef = useRef<number | null>(null);
   const currentPairRef = useRef<WordPair | null>(null);
 
   // Calculate progress percentage
-  const progressPercentage = wordPairs.length > 0 
-    ? Math.min(100, Math.floor((currentPairIndex / wordPairs.length) * 100))
-    : 0;
+  const progressPercentage =
+    wordPairs.length > 0
+      ? Math.min(100, Math.floor((currentPairIndex / wordPairs.length) * 100))
+      : 0;
 
   // Get current pair
   const currentPair = wordPairs[currentPairIndex] || null;
@@ -74,48 +72,47 @@ export const useGameState = (): GameStateData => {
           console.error(`No word pairs found for level ${state.currentLevel}`);
           return;
         }
-        
+
         // Shuffle the pairs for randomization
         const shuffledPairs = [...pairs].sort(() => Math.random() - 0.5);
         setWordPairs(shuffledPairs);
-        
+
         // Start a new metrics session
         const newSessionId = await startNewSession(state.currentLevel);
         setSessionId(newSessionId);
-        
+
         // Preload audio for all word pairs
         const audioPaths = shuffledPairs.flatMap(pair => [
           `/audio/prompts/${pair.audioPrompt1}`,
-          `/audio/prompts/${pair.audioPrompt2}`
+          `/audio/prompts/${pair.audioPrompt2}`,
         ]);
         audioService.preloadAudio(audioPaths);
-        
+
         // Also preload feedback sounds
         audioService.preloadAudio([
           '/audio/feedback/correct.mp3',
           '/audio/feedback/incorrect.mp3',
-          '/audio/feedback/level_complete.mp3'
+          '/audio/feedback/level_complete.mp3',
         ]);
 
         // Reset state when loading new pairs
         setCurrentPairIndex(0);
         setSelectedWord(null);
         setIsCorrect(null);
-        setIsRetry(false);
         setGameStatus('intro');
         setScore({
           correct: 0,
           total: 0,
           retries: 0,
-          successfulRetries: 0
+          successfulRetries: 0,
         });
       } catch (error) {
         console.error('Error loading word pairs:', error);
       }
     };
-    
+
     loadPairs();
-    
+
     // Clean up session on unmount
     return () => {
       if (sessionId) {
@@ -131,12 +128,12 @@ export const useGameState = (): GameStateData => {
       const timer = setTimeout(() => {
         setGameStatus('prompt');
       }, 2000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [wordPairs, gameStatus]);
 
-  // Start new session with initialized retry stats
+  // Start new session
   const startNewSession = async (level: number): Promise<string> => {
     try {
       const result = await metricsService.startSession(level);
@@ -152,163 +149,33 @@ export const useGameState = (): GameStateData => {
     if (gameStatus === 'prompt' && wordPairs.length > 0) {
       const pair = wordPairs[currentPairIndex];
       currentPairRef.current = pair;
-      
+
       // Randomly select which word to prompt
       const isFirstWord = Math.random() > 0.5;
       const promptWord = isFirstWord ? pair.word1 : pair.word2;
       const promptAudio = isFirstWord ? pair.audioPrompt1 : pair.audioPrompt2;
-      
+
       setCurrentPromptWord(promptWord);
-      
+
       // Play the audio prompt
       if (state.isAudioEnabled) {
         audioService.playWordPrompt(promptAudio);
       }
-      
+
       // Record the start time for response time measurement
       startTimeRef.current = Date.now();
-      
+
       // Move to selection state
       setGameStatus('selection');
     }
   }, [gameStatus, wordPairs, currentPairIndex, state.isAudioEnabled]);
 
-  // Handle skipping to the next word pair
-  const handleSkip = useCallback(() => {
-    // Record the practice as skipped
-    if (sessionId && currentPair) {
-      try {
-        metricsService.recordPractice({
-          wordPair: currentPair,
-          selectedWord: "skipped",
-          targetWord: currentPromptWord || "",
-          responseTimeMs: 0,
-          isRetry,
-          attemptCount: isRetry ? 2 : 1
-        }).catch(console.error);
-      } catch (error) {
-        console.error('Error recording skipped practice:', error);
-      }
-    }
-    
-    // Check if this is the last pair
-    if (currentPairIndex >= wordPairs.length - 1) {
-      // End of game
-      setGameStatus('complete');
-      
-      // End the session
-      if (sessionId) {
-        metricsService.endSession().catch(console.error);
-      }
-      
-      // Play level complete sound
-      if (state.isAudioEnabled) {
-        audioService.playLevelCompleteSound();
-      }
-    } else {
-      // Move to next pair
-      setCurrentPairIndex(prev => prev + 1);
-      setSelectedWord(null);
-      setIsCorrect(null);
-      setIsRetry(false); // Reset retry flag for next pair
-      setGameStatus('prompt');
-    }
-  }, [currentPair, currentPairIndex, currentPromptWord, wordPairs.length, sessionId, state.isAudioEnabled, isRetry]);
-
-  // Handle retry of the current prompt
-  const handleRetry = useCallback(() => {
-    if (!currentPromptWord || !currentPairRef.current) return;
-    
-    // Reset selection and correctness
-    setSelectedWord(null);
-    setIsCorrect(null);
-    
-    // Set retry flag if not already set
-    if (!isRetry) {
-      setIsRetry(true);
-      setScore(prev => ({
-        ...prev,
-        retries: prev.retries + 1
-      }));
-      
-      // Swap the word pairs for the retry
-      try {
-        setWordPairs(prevPairs => {
-          if (currentPairIndex < 0 || currentPairIndex >= prevPairs.length) return prevPairs;
-          
-          const newPairs = [...prevPairs];
-          const currentPair = {...newPairs[currentPairIndex]};
-          
-          if (!currentPair || !currentPair.word1 || !currentPair.word2) {
-            console.error('Invalid pair data for swapping:', currentPair);
-            return prevPairs;
-          }
-          
-          // Swap word1 and word2
-          const tempWord = currentPair.word1;
-          const tempImage = currentPair.image1;
-          const tempAudio = currentPair.audioPrompt1;
-          
-          currentPair.word1 = currentPair.word2;
-          currentPair.image1 = currentPair.image2;
-          currentPair.audioPrompt1 = currentPair.audioPrompt2;
-          
-          currentPair.word2 = tempWord;
-          currentPair.image2 = tempImage;
-          currentPair.audioPrompt2 = tempAudio;
-          
-          // Update the currentPromptWord to match the swapped positions
-          if (currentPromptWord === tempWord) {
-            // If the current prompt was word1, now it will be word2
-            setCurrentPromptWord(currentPair.word1);
-          } else if (currentPromptWord === currentPair.word2) {
-            // If the current prompt was word2, now it will be word1
-            setCurrentPromptWord(currentPair.word2);
-          }
-          
-          newPairs[currentPairIndex] = currentPair;
-          return newPairs;
-        });
-      } catch (error) {
-        console.error('Error swapping word pairs:', error);
-      }
-    }
-    
-    // Reset timer for response time measurement
-    startTimeRef.current = Date.now();
-    
-    // Get the updated pair after swapping
-    const pair = wordPairs[currentPairIndex];
-    if (pair) {
-      currentPairRef.current = pair;
-    }
-    
-    // Play the audio prompt again - using currentPairRef.current for safety
-    const currentPair = currentPairRef.current;
-    if (!currentPair) return;
-    
-    const promptAudio = currentPair.word1 === currentPromptWord 
-      ? currentPair.audioPrompt1 
-      : currentPair.audioPrompt2;
-    
-    // Always play audio on retry - this is important feedback
-    audioService.playWordPrompt(promptAudio);
-    
-    // Slight delay to ensure audio is heard before selection is possible
-    setTimeout(() => {
-      // Go back to selection state
-      setGameStatus('selection');
-    }, 500);
-  }, [currentPromptWord, state.isAudioEnabled, isRetry, currentPairIndex, wordPairs]);
-
   // Handle replay button click (just plays audio again)
   const handleReplay = useCallback(() => {
     if (gameStatus === 'selection' && currentPromptWord && currentPairRef.current) {
       const pair = currentPairRef.current;
-      const promptAudio = pair.word1 === currentPromptWord 
-        ? pair.audioPrompt1 
-        : pair.audioPrompt2;
-      
+      const promptAudio = pair.word1 === currentPromptWord ? pair.audioPrompt1 : pair.audioPrompt2;
+
       if (state.isAudioEnabled) {
         audioService.playWordPrompt(promptAudio);
       }
@@ -316,96 +183,93 @@ export const useGameState = (): GameStateData => {
   }, [gameStatus, currentPromptWord, state.isAudioEnabled]);
 
   // Handle word selection
-  const handleWordSelection = useCallback(async (word: string) => {
-    if (gameStatus !== 'selection' || !currentPromptWord || !currentPair) return;
-    
-    const responseTime = Date.now() - (startTimeRef.current || Date.now());
-    const correct = word === currentPromptWord;
-    
-    setSelectedWord(word);
-    setIsCorrect(correct);
-    setGameStatus('feedback');
-    
-    // Update score
-    setScore(prev => {
-      const newCorrect = prev.correct + (correct ? 1 : 0);
-      const newSuccessfulRetries = prev.successfulRetries + (correct && isRetry ? 1 : 0);
-      
-      return {
-        correct: newCorrect,
-        total: prev.total + 1,
-        retries: prev.retries,
-        successfulRetries: newSuccessfulRetries
-      };
-    });
-    
-    // Play feedback sound
-    if (state.isAudioEnabled) {
-      if (correct) {
-        audioService.playCorrectSound();
-      } else {
-        audioService.playIncorrectSound();
-      }
-    }
-    
-    // Record the practice result
-    if (sessionId) {
-      try {
-        await metricsService.recordPractice({
-          wordPair: currentPair,
-          selectedWord: word,
-          targetWord: currentPromptWord,
-          responseTimeMs: responseTime,
-          isRetry,
-          attemptCount: isRetry ? 2 : 1
-        });
-      } catch (error) {
-        console.error('Error recording practice result:', error);
-      }
-    }
-    
-    // Only auto-advance if the answer was correct
-    // Otherwise user needs to explicitly press retry or replay
-    if (!correct) {
-      return;
-    }
-    
-    // Move to next pair after a longer delay to allow celebration animation to complete
-    // 4000ms = 0.5s feedback delay + 3s animation + 0.5s buffer
-    const timer = setTimeout(() => {
-      if (currentPairIndex >= wordPairs.length - 1) {
-        // End of game
-        setGameStatus('complete');
-        
-        // End the session
-        if (sessionId) {
-          metricsService.endSession().catch(console.error);
+  const handleWordSelection = useCallback(
+    async (word: string) => {
+      if (gameStatus !== 'selection' || !currentPromptWord || !currentPair) return;
+
+      const responseTime = Date.now() - (startTimeRef.current || Date.now());
+      const correct = word === currentPromptWord;
+
+      setSelectedWord(word);
+      setIsCorrect(correct);
+      setGameStatus('feedback');
+
+      // Update score
+      setScore(prev => {
+        const newCorrect = prev.correct + (correct ? 1 : 0);
+
+        return {
+          correct: newCorrect,
+          total: prev.total + 1,
+        };
+      });
+
+      // Play feedback sound
+      if (state.isAudioEnabled) {
+        if (correct) {
+          audioService.playCorrectSound();
+        } else {
+          audioService.playIncorrectSound();
         }
-        
-        // Play level complete sound
-        if (state.isAudioEnabled) {
-          audioService.playLevelCompleteSound();
-        }
-      } else {
-        // Move to next pair
-        setCurrentPairIndex(prev => prev + 1);
-        setSelectedWord(null);
-        setIsCorrect(null);
-        setIsRetry(false); // Reset retry flag for next pair
-        setGameStatus('prompt');
       }
-    }, 4000);
-    
-    return () => clearTimeout(timer);
-  }, [gameStatus, currentPairIndex, currentPromptWord, currentPair, wordPairs.length, sessionId, state.isAudioEnabled, isRetry]);
+
+      // Record the practice result
+      if (sessionId) {
+        try {
+          await metricsService.recordPractice({
+            wordPair: currentPair,
+            selectedWord: word,
+            targetWord: currentPromptWord,
+            responseTimeMs: responseTime,
+          });
+        } catch (error) {
+          console.error('Error recording practice result:', error);
+        }
+      }
+
+      // Move to next pair after a longer delay to allow celebration animation to complete
+      // 4000ms = 0.5s feedback delay + 3s animation + 0.5s buffer
+      const timer = setTimeout(() => {
+        if (currentPairIndex >= wordPairs.length - 1) {
+          // End of game
+          setGameStatus('complete');
+
+          // End the session
+          if (sessionId) {
+            metricsService.endSession().catch(console.error);
+          }
+
+          // Play level complete sound
+          if (state.isAudioEnabled) {
+            audioService.playLevelCompleteSound();
+          }
+        } else {
+          // Move to next pair
+          setCurrentPairIndex(prev => prev + 1);
+          setSelectedWord(null);
+          setIsCorrect(null);
+          setGameStatus('prompt');
+        }
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    },
+    [
+      gameStatus,
+      currentPairIndex,
+      currentPromptWord,
+      currentPair,
+      wordPairs.length,
+      sessionId,
+      state.isAudioEnabled,
+    ]
+  );
 
   // Handle advancing to next level
   const handleNextLevel = useCallback(() => {
     // Move to the next level if performance is good enough
-    const accuracy = score.total > 0 
-      ? (score.correct / score.total) * 100 
-      : 0;
-      
+    const accuracy = score.total > 0 ? (score.correct / score.total) * 100 : 0;
+
     // Return true if we're advancing to a new level, false otherwise
     if (accuracy >= 80 && state.currentLevel < 4) {
       dispatch({ type: 'SET_LEVEL', payload: state.currentLevel + 1 });
@@ -422,14 +286,11 @@ export const useGameState = (): GameStateData => {
     selectedWord,
     gameStatus,
     isCorrect,
-    isRetry,
     score,
     sessionId,
     handleWordSelection,
     handleReplay,
-    handleRetry,
-    handleSkip, // Add the skip function
     handleNextLevel,
-    progressPercentage
+    progressPercentage,
   };
 };

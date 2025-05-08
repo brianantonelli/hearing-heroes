@@ -12,25 +12,22 @@ const SessionSummary: React.FC<SessionSummaryProps> = ({ session }) => {
   const formatDate = (timestamp: number): string => {
     return new Date(timestamp).toLocaleString();
   };
-  
+
   const formatDuration = (startTime: number, endTime: number | null): string => {
     if (!endTime) return 'Ongoing';
-    
+
     const durationInMs = endTime - startTime;
     const minutes = Math.floor(durationInMs / (1000 * 60));
     const seconds = Math.floor((durationInMs % (1000 * 60)) / 1000);
-    
+
     return `${minutes}m ${seconds}s`;
   };
 
-  const accuracyPercentage = session.totalPractices > 0
-    ? Math.round((session.correctPractices / session.totalPractices) * 100)
-    : 0;
-    
-  const retrySuccessRate = session.retryCount > 0
-    ? Math.round((session.successfulRetries / session.retryCount) * 100)
-    : 0;
-  
+  const accuracyPercentage =
+    session.totalPractices > 0
+      ? Math.round((session.correctPractices / session.totalPractices) * 100)
+      : 0;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
@@ -54,7 +51,7 @@ const SessionSummary: React.FC<SessionSummaryProps> = ({ session }) => {
           </div>
         </div>
       </div>
-      
+
       <div>
         <h3 className="text-lg font-semibold mb-2">Performance Summary</h3>
         <div className="bg-gray-50 p-4 rounded-md">
@@ -69,10 +66,6 @@ const SessionSummary: React.FC<SessionSummaryProps> = ({ session }) => {
           <div className="grid grid-cols-2 gap-2 mb-2">
             <div className="text-gray-600">Accuracy:</div>
             <div>{accuracyPercentage}%</div>
-          </div>
-          <div className="grid grid-cols-2 gap-2 mb-2">
-            <div className="text-gray-600">Retry Success Rate:</div>
-            <div>{session.retryCount} retries, {retrySuccessRate}% success</div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="text-gray-600">Avg. Response Time:</div>

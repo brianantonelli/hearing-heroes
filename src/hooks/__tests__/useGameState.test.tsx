@@ -70,86 +70,71 @@ describe('useGameState', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
-    
+
     // Mock the getWordPairsByLevel function
     (getWordPairsByLevel as jest.Mock).mockResolvedValue(mockWordPairs);
   });
-  
+
   afterEach(() => {
     jest.useRealTimers();
   });
-  
+
   test('should initialize with correct default state', async () => {
     const { result } = renderHook(() => useGameState());
-    
+
     // Initial state should be correct
     expect(result.current.gameStatus).toBe('intro');
     expect(result.current.wordPairs).toEqual([]);
     expect(result.current.currentPair).toBeNull();
   });
-  
+
   test('should expose correct methods and properties', async () => {
     const { result } = renderHook(() => useGameState());
-    
+
     // Check that the hook provides the required functions
     expect(typeof result.current.handleReplay).toBe('function');
     expect(typeof result.current.handleWordSelection).toBe('function');
-    expect(typeof result.current.handleRetry).toBe('function');
     expect(typeof result.current.handleNextLevel).toBe('function');
   });
-  
+
   test('should call handleWordSelection', async () => {
     const { result } = renderHook(() => useGameState());
-    
+
     // Mock the function
     const mockHandler = jest.fn();
     result.current.handleWordSelection = mockHandler;
-    
+
     // Call the function
     result.current.handleWordSelection('bat');
-    
+
     // Verify it was called
     expect(mockHandler).toHaveBeenCalledWith('bat');
   });
-  
-  test('should call handleRetry', async () => {
-    const { result } = renderHook(() => useGameState());
-    
-    // Mock the function
-    const mockHandler = jest.fn();
-    result.current.handleRetry = mockHandler;
-    
-    // Call the function
-    result.current.handleRetry();
-    
-    // Verify it was called
-    expect(mockHandler).toHaveBeenCalled();
-  });
-  
+
   test('should call handleNextLevel', async () => {
     const { result } = renderHook(() => useGameState());
-    
+
     // Mock the function
     const mockHandler = jest.fn();
     result.current.handleNextLevel = mockHandler;
-    
+
     // Call the function
     result.current.handleNextLevel();
-    
+
     // Verify it was called
     expect(mockHandler).toHaveBeenCalled();
   });
-  
+
   test('should call handleReplay', async () => {
     const { result } = renderHook(() => useGameState());
-    
+
     // Mock the function
     const mockHandler = jest.fn();
     result.current.handleReplay = mockHandler;
-    
+
     // Call the function
     result.current.handleReplay();
-    
+
     // Verify it was called
     expect(mockHandler).toHaveBeenCalled();
   });

@@ -62,7 +62,6 @@ An iPad-based game to help Samantha practice consonant manner contrasts for spee
 - Accuracy percentage
 - Response time
 - Progress across specific contrast types
-- Retry count and success rate
 - Session duration and frequency
 
 ## Technical Implementation

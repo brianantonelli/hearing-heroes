@@ -26,17 +26,23 @@ async function openDatabase(): Promise<HearingHeroesDB> {
       if (oldVersion < 1) {
         // Version 1 schema creation
         if (!db.objectStoreNames.contains(PRACTICE_RESULTS_STORE)) {
-          const practiceResultsStore = db.createObjectStore(PRACTICE_RESULTS_STORE, { keyPath: 'id' });
+          const practiceResultsStore = db.createObjectStore(PRACTICE_RESULTS_STORE, {
+            keyPath: 'id',
+          });
           practiceResultsStore.createIndex('sessionId', 'sessionId', { unique: false });
           practiceResultsStore.createIndex('contrastType', 'contrastType', { unique: false });
           practiceResultsStore.createIndex('difficultyLevel', 'difficultyLevel', { unique: false });
           practiceResultsStore.createIndex('timestamp', 'timestamp', { unique: false });
         }
-        
+
         if (!db.objectStoreNames.contains(PRACTICE_SESSIONS_STORE)) {
-          const practiceSessionsStore = db.createObjectStore(PRACTICE_SESSIONS_STORE, { keyPath: 'id' });
+          const practiceSessionsStore = db.createObjectStore(PRACTICE_SESSIONS_STORE, {
+            keyPath: 'id',
+          });
           practiceSessionsStore.createIndex('startTime', 'startTime', { unique: false });
-          practiceSessionsStore.createIndex('difficultyLevel', 'difficultyLevel', { unique: false });
+          practiceSessionsStore.createIndex('difficultyLevel', 'difficultyLevel', {
+            unique: false,
+          });
         }
       }
 
@@ -48,7 +54,7 @@ async function openDatabase(): Promise<HearingHeroesDB> {
           preferencesStore.createIndex('lastUpdated', 'lastUpdated', { unique: false });
         }
       }
-    }
+    },
   });
 }
 
@@ -57,13 +63,13 @@ async function openDatabase(): Promise<HearingHeroesDB> {
  */
 export class DBService {
   private db: Promise<HearingHeroesDB>;
-  
+
   constructor() {
     this.db = openDatabase();
   }
-  
+
   // Practice Results CRUD operations
-  
+
   /**
    * Save a practice result
    */
@@ -72,7 +78,7 @@ export class DBService {
     await db.put(PRACTICE_RESULTS_STORE, result);
     return result.id;
   }
-  
+
   /**
    * Get a practice result by ID
    */
@@ -80,17 +86,17 @@ export class DBService {
     const db = await this.db;
     return db.get(PRACTICE_RESULTS_STORE, id);
   }
-  
+
   /**
    * Query practice results based on filters
    */
   async queryPracticeResults(query: PracticeResultQuery): Promise<PracticeResult[]> {
     const db = await this.db;
-    
+
     // Use the most specific index available for the query
     let store = db.transaction(PRACTICE_RESULTS_STORE).objectStore(PRACTICE_RESULTS_STORE);
     let results: PracticeResult[] = [];
-    
+
     if (query.sessionId) {
       // If filtering by session ID, use the sessionId index
       const index = store.index('sessionId');
@@ -107,7 +113,7 @@ export class DBService {
       // Otherwise, get all results
       results = await store.getAll();
     }
-    
+
     // Apply additional filters that couldn't be handled by the index
     if (query.startDate !== undefined || query.endDate !== undefined) {
       results = results.filter(result => {
@@ -121,10 +127,10 @@ export class DBService {
         return true;
       });
     }
-    
+
     // Sort by timestamp (newest first)
     results.sort((a, b) => b.timestamp - a.timestamp);
-    
+
     // Apply limit and offset
     if (query.offset !== undefined) {
       results = results.slice(query.offset);
@@ -132,12 +138,12 @@ export class DBService {
     if (query.limit !== undefined) {
       results = results.slice(0, query.limit);
     }
-    
+
     return results;
   }
-  
+
   // Practice Sessions CRUD operations
-  
+
   /**
    * Save a practice session
    */
@@ -146,7 +152,7 @@ export class DBService {
     await db.put(PRACTICE_SESSIONS_STORE, session);
     return session.id;
   }
-  
+
   /**
    * Get a practice session by ID
    */
@@ -154,7 +160,7 @@ export class DBService {
     const db = await this.db;
     return db.get(PRACTICE_SESSIONS_STORE, id);
   }
-  
+
   /**
    * Get all practice sessions
    */
@@ -168,34 +174,39 @@ export class DBService {
    */
   async getSessionsByLevel(level: number): Promise<PracticeSession[]> {
     const db = await this.db;
-    const index = db.transaction(PRACTICE_SESSIONS_STORE).objectStore(PRACTICE_SESSIONS_STORE).index('difficultyLevel');
+    const index = db
+      .transaction(PRACTICE_SESSIONS_STORE)
+      .objectStore(PRACTICE_SESSIONS_STORE)
+      .index('difficultyLevel');
     return index.getAll(level);
   }
-  
+
   /**
    * Calculate overall statistics
    */
   async calculateOverallStatistics(): Promise<OverallStatistics> {
     const db = await this.db;
-    
+
     // Get all completed sessions and practice results
-    const sessionsStore = db.transaction(PRACTICE_SESSIONS_STORE).objectStore(PRACTICE_SESSIONS_STORE);
+    const sessionsStore = db
+      .transaction(PRACTICE_SESSIONS_STORE)
+      .objectStore(PRACTICE_SESSIONS_STORE);
     const sessions = await sessionsStore.getAll();
     const completedSessions = sessions.filter(session => session.endTime !== null);
-    
+
     const resultsStore = db.transaction(PRACTICE_RESULTS_STORE).objectStore(PRACTICE_RESULTS_STORE);
     const allResults = await resultsStore.getAll();
-    
+
     // Calculate overall statistics
     const totalSessions = completedSessions.length;
     const totalPractices = allResults.length;
     const correctPractices = allResults.filter(result => result.isCorrect).length;
     const accuracyPercentage = totalPractices > 0 ? (correctPractices / totalPractices) * 100 : 0;
-    
+
     // Calculate average response time
     const totalResponseTime = allResults.reduce((sum, result) => sum + result.responseTimeMs, 0);
     const averageResponseTimeMs = totalPractices > 0 ? totalResponseTime / totalPractices : 0;
-    
+
     // Group results by contrast type
     const contrastMap = new Map<ContrastType, PracticeResult[]>();
     allResults.forEach(result => {
@@ -205,7 +216,7 @@ export class DBService {
       }
       contrastMap.get(contrastType)!.push(result);
     });
-    
+
     // Calculate statistics for each contrast type
     const contrastStatistics: ContrastStatistics[] = [];
     contrastMap.forEach((results, contrastType) => {
@@ -214,24 +225,16 @@ export class DBService {
       const accuracyPercentage = totalPractices > 0 ? (correctPractices / totalPractices) * 100 : 0;
       const totalResponseTime = results.reduce((sum, result) => sum + result.responseTimeMs, 0);
       const averageResponseTimeMs = totalPractices > 0 ? totalResponseTime / totalPractices : 0;
-      
-      // Calculate retry statistics
-      const retries = results.filter(result => result.isRetry);
-      const retryCount = retries.length;
-      const successfulRetries = retries.filter(result => result.isCorrect).length;
-      const retrySuccessRate = retryCount > 0 ? (successfulRetries / retryCount) * 100 : 0;
-      
+
       contrastStatistics.push({
         contrastType,
         totalPractices,
         correctPractices,
         accuracyPercentage,
-        retryCount,
-        retrySuccessRate,
         averageResponseTimeMs,
       });
     });
-    
+
     // Calculate progress by level
     const levelMap = new Map<number, PracticeResult[]>();
     allResults.forEach(result => {
@@ -241,34 +244,26 @@ export class DBService {
       }
       levelMap.get(level)!.push(result);
     });
-    
+
     const progressByLevel = Array.from(levelMap.entries()).map(([level, results]) => {
       const totalPractices = results.length;
       const correctPractices = results.filter(result => result.isCorrect).length;
       const accuracy = totalPractices > 0 ? (correctPractices / totalPractices) * 100 : 0;
       return { level, accuracy };
     });
-    
+
     // Sort levels in ascending order
     progressByLevel.sort((a, b) => a.level - b.level);
-    
+
     // Get the most recent session timestamp
     const lastSession = completedSessions.sort((a, b) => (b.endTime || 0) - (a.endTime || 0))[0];
     const lastSessionTimestamp = lastSession ? lastSession.endTime : null;
-    
-    // Calculate overall retry statistics
-    const totalRetries = allResults.filter(result => result.isRetry).length;
-    const successfulRetries = allResults.filter(result => result.isRetry && result.isCorrect).length;
-    const retrySuccessRate = totalRetries > 0 ? (successfulRetries / totalRetries) * 100 : 0;
 
     return {
       totalSessions,
       totalPractices,
       correctPractices,
       accuracyPercentage,
-      totalRetries,
-      successfulRetries,
-      retrySuccessRate,
       averageResponseTimeMs,
       contrastStatistics,
       progressByLevel,
@@ -298,14 +293,18 @@ export class DBService {
   /**
    * Update a specific preference value
    */
-  async updatePreference(key: keyof Preferences, value: any, id: string = 'default'): Promise<void> {
+  async updatePreference(
+    key: keyof Preferences,
+    value: any,
+    id: string = 'default'
+  ): Promise<void> {
     const db = await this.db;
     const tx = db.transaction(PREFERENCES_STORE, 'readwrite');
     const store = tx.objectStore(PREFERENCES_STORE);
-    
+
     // Get current preferences or create default
     let preferences = await store.get(id);
-    
+
     if (!preferences) {
       // Create default preferences if none exist
       preferences = {
@@ -318,14 +317,14 @@ export class DBService {
         enableAnimations: true,
         showLevelSelection: false,
         requireParentAuth: true,
-        lastUpdated: Date.now()
+        lastUpdated: Date.now(),
       };
     }
-    
+
     // Update the specified preference
     preferences[key] = value;
     preferences.lastUpdated = Date.now();
-    
+
     // Save updated preferences
     await store.put(preferences);
     await tx.done;
@@ -336,12 +335,12 @@ export class DBService {
    */
   async clearPracticeData(): Promise<void> {
     const db = await this.db;
-    
+
     // Clear practice results
     const resultsTx = db.transaction(PRACTICE_RESULTS_STORE, 'readwrite');
     await resultsTx.objectStore(PRACTICE_RESULTS_STORE).clear();
     await resultsTx.done;
-    
+
     // Clear practice sessions
     const sessionsTx = db.transaction(PRACTICE_SESSIONS_STORE, 'readwrite');
     await sessionsTx.objectStore(PRACTICE_SESSIONS_STORE).clear();
@@ -353,16 +352,16 @@ export class DBService {
    */
   async clearAllData(): Promise<void> {
     const db = await this.db;
-    
+
     // Clear all stores
     const resultsTx = db.transaction(PRACTICE_RESULTS_STORE, 'readwrite');
     await resultsTx.objectStore(PRACTICE_RESULTS_STORE).clear();
     await resultsTx.done;
-    
+
     const sessionsTx = db.transaction(PRACTICE_SESSIONS_STORE, 'readwrite');
     await sessionsTx.objectStore(PRACTICE_SESSIONS_STORE).clear();
     await sessionsTx.done;
-    
+
     const prefTx = db.transaction(PREFERENCES_STORE, 'readwrite');
     await prefTx.objectStore(PREFERENCES_STORE).clear();
     await prefTx.done;

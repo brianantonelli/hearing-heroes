@@ -6,30 +6,26 @@ import { ContrastType } from './wordPairs';
 
 // Represents the result of a single word pair practice
 export interface PracticeResult {
-  id: string;            // Unique identifier for this practice result
-  sessionId: string;     // ID of the session this belongs to
-  wordPairId: string;    // ID of the word pair that was practiced
-  targetWord: string;    // The word that was the correct answer
-  selectedWord: string;  // The word that was selected by the user
-  isCorrect: boolean;    // Whether the selection was correct
+  id: string; // Unique identifier for this practice result
+  sessionId: string; // ID of the session this belongs to
+  wordPairId: string; // ID of the word pair that was practiced
+  targetWord: string; // The word that was the correct answer
+  selectedWord: string; // The word that was selected by the user
+  isCorrect: boolean; // Whether the selection was correct
   responseTimeMs: number; // How long it took to respond in milliseconds
-  timestamp: number;     // When this practice happened (Unix timestamp)
+  timestamp: number; // When this practice happened (Unix timestamp)
   contrastType: ContrastType; // Type of contrast in this practice
   difficultyLevel: number; // Difficulty level of this practice
-  isRetry: boolean;      // Whether this was a retry attempt
-  attemptCount: number;  // Which attempt number (1 = first try, 2 = retry)
 }
 
 // Represents a practice session
 export interface PracticeSession {
-  id: string;            // Unique identifier for this session
-  startTime: number;     // When the session started (Unix timestamp)
+  id: string; // Unique identifier for this session
+  startTime: number; // When the session started (Unix timestamp)
   endTime: number | null; // When the session ended (Unix timestamp), null if ongoing
   difficultyLevel: number; // Difficulty level for this session
   totalPractices: number; // Total number of practices in this session
   correctPractices: number; // Number of correct practices
-  retryCount: number;    // Number of retries used
-  successfulRetries: number; // Number of successful retries (correct on second attempt)
   averageResponseTimeMs: number; // Average response time in milliseconds
   contrastTypes: ContrastType[]; // Types of contrasts practiced in this session
 }
@@ -37,23 +33,18 @@ export interface PracticeSession {
 // Summary statistics for a specific contrast type
 export interface ContrastStatistics {
   contrastType: ContrastType; // The type of contrast
-  totalPractices: number;    // Total number of practices with this contrast
-  correctPractices: number;  // Number of correct practices
+  totalPractices: number; // Total number of practices with this contrast
+  correctPractices: number; // Number of correct practices
   accuracyPercentage: number; // Accuracy as a percentage
-  retryCount: number;        // Number of retries for this contrast type
-  retrySuccessRate: number;  // Success rate of retries for this contrast type
   averageResponseTimeMs: number; // Average response time in milliseconds
 }
 
 // Overall statistics for all practice sessions
 export interface OverallStatistics {
-  totalSessions: number;    // Total number of completed sessions
-  totalPractices: number;   // Total number of practices across all sessions
+  totalSessions: number; // Total number of completed sessions
+  totalPractices: number; // Total number of practices across all sessions
   correctPractices: number; // Total number of correct practices
   accuracyPercentage: number; // Overall accuracy as a percentage
-  totalRetries: number;     // Total number of retries across all sessions
-  successfulRetries: number; // Total number of successful retries
-  retrySuccessRate: number; // Success rate of retries as a percentage
   averageResponseTimeMs: number; // Overall average response time in milliseconds
   contrastStatistics: ContrastStatistics[]; // Statistics broken down by contrast type
   progressByLevel: { level: number; accuracy: number }[]; // Progress by difficulty level
