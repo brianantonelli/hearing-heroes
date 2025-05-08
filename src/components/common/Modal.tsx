@@ -106,20 +106,14 @@ const Modal: React.FC<ModalProps> = ({
           {children}
         </div>
         
-        <div className="bg-gray-100 px-4 py-3 flex justify-end space-x-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition"
-          >
-            {cancelText}
-          </button>
-          
+        <div className="bg-gray-100 px-4 py-3 flex justify-center">
           {onConfirm && (
             <button
               onClick={onConfirm}
-              className={`px-4 py-2 ${confirmButtonClass} text-white rounded transition`}
+              className={`px-6 py-3 ${confirmButtonClass} text-white rounded-lg transition-all active:scale-95 transform shadow-md font-bold flex items-center gap-2`}
             >
-              {confirmText}
+              <span>{confirmText}</span>
+              <span className="text-lg">🚀</span>
             </button>
           )}
         </div>

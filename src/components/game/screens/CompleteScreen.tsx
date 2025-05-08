@@ -3,6 +3,7 @@ import { Container, Text, Sprite } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import GameButton from '../ui/GameButton';
 import { useAppContext } from '../../../context/AppContext';
+import { audioService } from '../../../services/audioService';
 
 interface CompleteScreenProps {
   score: {
@@ -142,8 +143,14 @@ const CompleteScreen: React.FC<CompleteScreenProps> = ({ score, width, height, o
     return items;
   };
 
-  // Initialize animations
+  // Initialize animations and play completion sound
   useEffect(() => {
+    // Play the level complete audio when component mounts
+    if (state.isAudioEnabled) {
+      // Use specific file for level complete instead of the default
+      audioService.playAudio('/audio/feedback/level_complete_great_job.mp3');
+    }
+    
     if (skipAnimation) {
       // If animations are disabled, just show the completed state
       setTitleScale(1);

@@ -34,7 +34,7 @@ const initialState: AppState = {
   isAuthenticated: false,
   currentLevel: 1,
   isAudioEnabled: true,
-  childName: 'Samantha', // Default name, can be changed in settings
+  childName: '', // Default name, can be changed in settings
   maxSessionMinutes: 15,
   requireParentAuth: true,
   enableAnimations: true,
@@ -119,36 +119,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     async function loadPreferences() {
       try {
         const prefs = await preferencesService.loadPreferences();
-        
+
         // Update context with stored preferences
         if (prefs.childName && prefs.childName !== state.childName) {
           dispatch({ type: 'SET_CHILD_NAME', payload: prefs.childName });
         }
-        
+
         if (prefs.currentLevel !== state.currentLevel) {
           dispatch({ type: 'SET_LEVEL', payload: prefs.currentLevel });
         }
-        
+
         if (prefs.isAudioEnabled !== state.isAudioEnabled) {
           dispatch({ type: 'TOGGLE_AUDIO' });
         }
-        
+
         if (prefs.maxSessionMinutes !== state.maxSessionMinutes) {
           dispatch({ type: 'SET_MAX_SESSION_MINUTES', payload: prefs.maxSessionMinutes });
         }
-        
+
         if (prefs.requireParentAuth !== state.requireParentAuth) {
           dispatch({ type: 'TOGGLE_PARENT_AUTH' });
         }
-        
+
         if (prefs.enableAnimations !== state.enableAnimations) {
           dispatch({ type: 'TOGGLE_ANIMATIONS' });
         }
-        
+
         if (prefs.showLevelSelection !== state.showLevelSelection) {
           dispatch({ type: 'TOGGLE_LEVEL_SELECTION' });
         }
-        
+
         if (prefs.difficultyMultiplier !== state.difficultyMultiplier) {
           dispatch({ type: 'SET_DIFFICULTY_MULTIPLIER', payload: prefs.difficultyMultiplier });
         }
@@ -156,7 +156,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error('Error loading preferences:', error);
       }
     }
-    
+
     loadPreferences();
   }, []);
 
@@ -170,7 +170,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error('Error syncing preferences:', error);
       }
     }
-    
+
     // Don't sync on first render - this would overwrite any preferences loaded from DB
     if (isInitialMount.current) {
       isInitialMount.current = false;
@@ -178,14 +178,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       syncPreferences();
     }
   }, [
-    state.childName, 
-    state.currentLevel, 
+    state.childName,
+    state.currentLevel,
     state.isAudioEnabled,
     state.maxSessionMinutes,
     state.requireParentAuth,
     state.enableAnimations,
     state.showLevelSelection,
-    state.difficultyMultiplier
+    state.difficultyMultiplier,
   ]);
 
   return <AppContext.Provider value={{ state, dispatch }}>{children}</AppContext.Provider>;

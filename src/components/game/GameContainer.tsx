@@ -49,10 +49,10 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     handleNextLevel,
   } = gameState;
 
-  // Reset celebration when moving to a new word pair
+  // Reset celebration when moving to a new word pair or changing game status
   useEffect(() => {
     setShowCelebration(false);
-  }, [currentPairIndex]);
+  }, [currentPairIndex, gameStatus]);
 
   // Custom word selection handler to show celebration animation
   const handleWordSelection = (word: string) => {
@@ -114,7 +114,9 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
   const handleCelebrationComplete = useCallback(() => {
     // Use a try-catch to prevent any errors from propagating
     try {
+      // Set this to false to ensure the celebration animation is removed
       setShowCelebration(false);
+      console.log("Celebration animation complete");
     } catch (error) {
       console.error('Error in handleCelebrationComplete:', error);
     }
@@ -169,12 +171,13 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
           { x: width / 2, y: height * 0.25 }, // Top
           { x: width / 2, y: height * 0.65 }, // Bottom
         ];
-        
+
     // Use a deterministic "random" based on the word pair to ensure consistent positions
     // This creates a reproducible but seemingly random pattern that doesn't change during replays
     // We use the sum of char codes in the words as a seed for deterministic randomization
-    const seed = currentPair.word1.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) + 
-                currentPair.word2.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    const seed =
+      currentPair.word1.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) +
+      currentPair.word2.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
     const shouldSwap = ((seed + currentPairIndex) % 7) > 3; // Using modulo 7 for more variation
     const positions = shouldSwap ? [imagePositions[1], imagePositions[0]] : [imagePositions[0], imagePositions[1]];
 
@@ -248,6 +251,9 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     );
   };
 
+  // For complete screen, don't try to show any leftover celebrations
+  const shouldShowCelebration = showCelebration && gameStatus !== 'complete';
+  
   return (
     <Stage
       width={width}
@@ -259,7 +265,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
       }}
     >
       {renderGameContent()}
-      {showCelebration && (
+      {shouldShowCelebration && gameStatus !== 'complete' && (
         <CelebrationAnimation
           width={width}
           height={height}

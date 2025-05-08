@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Container, Sprite, Text } from '@pixi/react';
 import { useAppContext } from '../../../context/AppContext';
 import * as PIXI from 'pixi.js';
+import { speechService } from '../../../services/speechService';
 
 // Animation configuration
 const CONFETTI_COUNT = 100;
@@ -26,6 +27,7 @@ interface CelebrationAnimationProps {
   width: number;
   height: number;
   onComplete?: () => void;
+  feedbackText?: string; // Optional text to display (defaults to getting a random one)
 }
 
 const generateConfetti = (width: number, height: number): Confetti[] => {
@@ -63,16 +65,40 @@ const generateConfetti = (width: number, height: number): Confetti[] => {
 const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
   width, 
   height,
-  onComplete
+  onComplete,
+  feedbackText
 }) => {
   const { state } = useAppContext();
   const [confetti, setConfetti] = useState<Confetti[]>([]);
   const [isActive, setIsActive] = useState(true);
+  const [celebrationText, setCelebrationText] = useState<string>(feedbackText || '');
   
   // Skip animation if animations are disabled in preferences
   const skipAnimation = !state.enableAnimations;
   
-  // Generate confetti on component mount
+  // Get a random celebration text if no feedbackText is provided
+  useEffect(() => {
+    if (!feedbackText && !celebrationText) {
+      const getRandomText = async () => {
+        try {
+          // Initialize speech service if needed
+          await speechService.initialize();
+          
+          // Get random success feedback and play it
+          // We use playRandomFeedback to ensure text and audio are synchronized
+          const text = await speechService.playRandomFeedback('pass');
+          setCelebrationText(text);
+        } catch (error) {
+          console.error('Error getting celebration text:', error);
+          setCelebrationText('Great job!'); // Fallback
+        }
+      };
+      
+      getRandomText();
+    }
+  }, [feedbackText, celebrationText]);
+  
+  // Generate confetti on component mount and handle cleanup
   useEffect(() => {
     if (skipAnimation) {
       if (onComplete) {
@@ -89,19 +115,27 @@ const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
     
     // End the animation after the duration
     const animationTimer = setTimeout(() => {
+      // First set active to false to stop animations
       setIsActive(false);
-      // Make sure we always call onComplete, even if there's an error
-      if (onComplete) {
-        try {
-          onComplete();
-        } catch (e) {
-          console.error('Error in animation completion handler:', e);
+      
+      // Small delay before calling onComplete to ensure animations have stopped
+      setTimeout(() => {
+        // Make sure we always call onComplete, even if there's an error
+        if (onComplete) {
+          try {
+            onComplete();
+          } catch (e) {
+            console.error('Error in animation completion handler:', e);
+          }
         }
-      }
+      }, 50);
     }, ANIMATION_DURATION);
     
+    // Clean up all timers when component unmounts
     return () => {
       clearTimeout(animationTimer);
+      // Ensure we set active to false immediately on unmount
+      setIsActive(false);
     };
   }, [width, height, onComplete, skipAnimation]);
   
@@ -166,10 +200,10 @@ const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
         />
       ))}
       
-      {/* Celebration text - simplified to avoid issues */}
+      {/* Celebration text - uses the text that matches the audio feedback */}
       <Container position={[width / 2, height / 2 - 50]}>
         <Text
-          text={"Great job!"}
+          text={celebrationText || "Great job!"}
           anchor={0.5}
           style={
             new PIXI.TextStyle({

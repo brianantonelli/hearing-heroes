@@ -82,7 +82,7 @@ export class AudioService {
    * @param category - Category of audio (for volume control)
    * @returns Promise that resolves when audio playback starts
    */
-  private async playAudio(path: string, category: AudioCategory): Promise<void> {
+  async playAudio(path: string, category: AudioCategory = AudioCategory.EFFECT): Promise<void> {
     // If muted, do nothing
     if (this.isMuted) {
       return Promise.resolve();

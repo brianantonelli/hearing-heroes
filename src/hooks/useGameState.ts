@@ -4,6 +4,7 @@ import { WordPair } from '../types/wordPairs';
 import { getWordPairsByLevel } from '../services/wordPairsService';
 import { audioService } from '../services/audioService';
 import { metricsService } from '../services/metricsService';
+import { speechService } from '../services/speechService';
 import { v4 as uuidv4 } from 'uuid';
 
 // Game states
@@ -204,14 +205,9 @@ export const useGameState = (): GameStateData => {
         };
       });
 
-      // Play feedback sound
-      if (state.isAudioEnabled) {
-        if (correct) {
-          audioService.playCorrectSound();
-        } else {
-          audioService.playIncorrectSound();
-        }
-      }
+      // We don't play feedback here - all audio and text feedback is now handled
+      // in the FeedbackMessage component, which calls speechService.playRandomFeedback
+      // This ensures the text and audio are properly synchronized
 
       // Record the practice result
       if (sessionId) {
@@ -227,22 +223,27 @@ export const useGameState = (): GameStateData => {
         }
       }
 
-      // Move to next pair after a longer delay to allow celebration animation to complete
-      // 4000ms = 0.5s feedback delay + 3s animation + 0.5s buffer
+      // Move to next pair after a delay to allow feedback to be shown
+      // We'll use a shorter delay to ensure smooth transition
       const timer = setTimeout(() => {
         if (currentPairIndex >= wordPairs.length - 1) {
-          // End of game
-          setGameStatus('complete');
-
-          // End the session
-          if (sessionId) {
-            metricsService.endSession().catch(console.error);
-          }
-
-          // Play level complete sound
-          if (state.isAudioEnabled) {
-            audioService.playLevelCompleteSound();
-          }
+          // Before setting game to complete, make sure to reset the feedback states
+          setSelectedWord(null);
+          setIsCorrect(null);
+          
+          // End of game - with a slight additional delay to ensure celebration is completed
+          setTimeout(() => {
+            // End the session
+            if (sessionId) {
+              metricsService.endSession().catch(console.error);
+            }
+            
+            // Level complete sound will be played by the CompleteScreen
+            // instead of here to make sure audio and text are synchronized
+            
+            // Now set the game status to complete
+            setGameStatus('complete');
+          }, 200);  // Short delay to ensure any animations are finished
         } else {
           // Move to next pair
           setCurrentPairIndex(prev => prev + 1);
