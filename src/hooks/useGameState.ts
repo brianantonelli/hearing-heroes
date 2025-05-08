@@ -124,7 +124,8 @@ export const useGameState = (): GameStateData => {
 
   // Start game when word pairs are loaded
   useEffect(() => {
-    if (wordPairs.length > 0 && gameStatus === 'intro') {
+    // Only auto-start if we're not showing level selection
+    if (wordPairs.length > 0 && gameStatus === 'intro' && !state.showLevelSelection) {
       // Show intro for a moment before starting
       const timer = setTimeout(() => {
         setGameStatus('prompt');
@@ -132,7 +133,7 @@ export const useGameState = (): GameStateData => {
 
       return () => clearTimeout(timer);
     }
-  }, [wordPairs, gameStatus]);
+  }, [wordPairs, gameStatus, state.showLevelSelection]);
 
   // Start new session
   const startNewSession = async (level: number): Promise<string> => {

@@ -262,7 +262,7 @@ const PreferencesScreen: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-medium">Level Selection</h4>
-              <p className="text-sm text-gray-600">Allow child to select difficulty level</p>
+              <p className="text-sm text-gray-600">Allow child to select difficulty level (on by default)</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input

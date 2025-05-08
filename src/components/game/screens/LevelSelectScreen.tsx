@@ -16,7 +16,6 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
   height = 600, // Default height
 }) => {
   const { state } = useAppContext();
-  const { childName } = state;
 
   // Animation state
   const [hoverLevel, setHoverLevel] = useState<number | null>(null);
@@ -69,6 +68,15 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
   // Calculate starting position for the top-left button to center the entire grid
   const gridStartX = centerX - gridWidth / 2 + buttonWidth / 2;
   const gridStartY = centerY - gridHeight / 2 + buttonHeight / 2;
+
+  // Handle level selection with custom handling
+  const handleSelectLevel = (level: number) => {
+    // First, set the current level
+    onLevelSelect(level);
+    
+    // We'll call this directly to avoid the weird auto-start issue
+    // The parent component will handle the rest
+  };
 
   // Draw the button with fun decorations
   const drawLevelButton = React.useCallback(
@@ -132,6 +140,9 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
     [buttonWidth, buttonHeight, hoverLevel, state.enableAnimations, pulsePhases]
   );
 
+  // Apply a small vertical offset to better center the grid in the available space
+  const verticalOffset = 20;
+
   return (
     <Container>
       <Text
@@ -155,7 +166,7 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
         const row = Math.floor(index / 2);
         const col = index % 2;
         const x = gridStartX + col * (buttonWidth + gridGap);
-        const y = gridStartY + row * (buttonHeight + gridGap) + 22;
+        const y = gridStartY + row * (buttonHeight + gridGap) + verticalOffset;
 
         const isSelected = level.number === state.currentLevel;
         const iconYOffset = state.enableAnimations ? iconOffsets[index] : 0;
@@ -166,7 +177,7 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
             position={[x, y]}
             interactive={true}
             cursor="pointer"
-            pointerdown={() => onLevelSelect(level.number)}
+            pointerdown={() => handleSelectLevel(level.number)} 
             pointerover={() => setHoverLevel(level.number)}
             pointerout={() => setHoverLevel(null)}
             scale={

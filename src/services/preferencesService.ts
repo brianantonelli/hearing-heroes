@@ -25,7 +25,7 @@ class PreferencesService {
         maxSessionMinutes: 15,
         difficultyMultiplier: 1.0,
         enableAnimations: true,
-        showLevelSelection: false,
+        showLevelSelection: true,
         requireParentAuth: true,
         lastUpdated: Date.now()
       };
@@ -123,7 +123,7 @@ class PreferencesService {
       maxSessionMinutes: 15,
       difficultyMultiplier: 1.0,
       enableAnimations: true,
-      showLevelSelection: false, 
+      showLevelSelection: true, 
       requireParentAuth: true,
       lastUpdated: Date.now()
     };

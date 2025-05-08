@@ -38,7 +38,7 @@ const initialState: AppState = {
   maxSessionMinutes: 15,
   requireParentAuth: true,
   enableAnimations: true,
-  showLevelSelection: false,
+  showLevelSelection: true,
   difficultyMultiplier: 1.0,
 };
 
