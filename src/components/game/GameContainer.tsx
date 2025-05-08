@@ -58,7 +58,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
   const handleWordSelection = (word: string) => {
     // We need to check if the word matches the current prompt word
     // before calling the original handler, because it will change state
-    const isAnswer = word === gameState.currentPromptWord;
+    const isAnswer = word === currentPromptWord;
 
     // Reset celebration state first to ensure it can be triggered again
     setShowCelebration(false);
@@ -92,7 +92,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     // Call handleNextLevel to potentially increase the level
     const movedToNextLevel = handleNextLevel();
 
-    if (movedToNextLevel) {
+    if (movedToNextLevel !== null) {
       // If we advanced to a new level, reload the game page to start the new level
       window.location.reload();
     } else {
