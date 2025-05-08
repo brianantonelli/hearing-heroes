@@ -26,6 +26,58 @@
   .loading-animation {
     @apply text-2xl text-primary animate-pulse;
   }
+  
+  /* Custom animations for background elements */
+  @keyframes float-up {
+    0% {
+      transform: translateY(0) rotate(0deg);
+    }
+    100% {
+      transform: translateY(-20vh) rotate(45deg);
+    }
+  }
+
+  .animate-float {
+    animation-name: float-up;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+  
+  /* Gentle image rocking animation */
+  @keyframes rock-left {
+    0% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(-15deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+  
+  @keyframes rock-right {
+    0% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(15deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+  
+  .animate-rock-left {
+    animation: rock-left 5s ease-in-out infinite;
+    transform-origin: bottom center;
+  }
+  
+  .animate-rock-right {
+    animation: rock-right 5s ease-in-out infinite;
+    transform-origin: bottom center;
+  }
 
   .btn {
     @apply cursor-pointer border-none rounded-lg font-sans text-base py-3 px-6 bg-primary text-white transition-colors;

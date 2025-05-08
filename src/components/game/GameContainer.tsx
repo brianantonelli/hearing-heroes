@@ -169,6 +169,14 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
           { x: width / 2, y: height * 0.25 }, // Top
           { x: width / 2, y: height * 0.65 }, // Bottom
         ];
+        
+    // Use a deterministic "random" based on the word pair to ensure consistent positions
+    // This creates a reproducible but seemingly random pattern that doesn't change during replays
+    // We use the sum of char codes in the words as a seed for deterministic randomization
+    const seed = currentPair.word1.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) + 
+                currentPair.word2.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    const shouldSwap = ((seed + currentPairIndex) % 7) > 3; // Using modulo 7 for more variation
+    const positions = shouldSwap ? [imagePositions[1], imagePositions[0]] : [imagePositions[0], imagePositions[1]];
 
     return (
       <Container>
@@ -179,8 +187,8 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
         <WordImage
           imagePath={image1Path}
           word={currentPair.word1}
-          x={imagePositions[0].x}
-          y={imagePositions[0].y}
+          x={positions[0].x}
+          y={positions[0].y}
           width={imageSize}
           height={imageSize}
           interactive={gameStatus === 'selection'}
@@ -191,8 +199,8 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
         <WordImage
           imagePath={image2Path}
           word={currentPair.word2}
-          x={imagePositions[1].x}
-          y={imagePositions[1].y}
+          x={positions[1].x}
+          y={positions[1].y}
           width={imageSize}
           height={imageSize}
           interactive={gameStatus === 'selection'}

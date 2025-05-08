@@ -31,6 +31,22 @@ module.exports = {
       fontFamily: {
         sans: ['Arial', 'sans-serif'],
       },
+      animation: {
+        shine: 'shine 2s ease-in-out infinite',
+        ping: 'ping 5s cubic-bezier(0, 0, 0.2, 1) infinite',
+      },
+      keyframes: {
+        shine: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(300%)' },
+        },
+        ping: {
+          '75%, 100%': {
+            transform: 'scale(2)',
+            opacity: '0',
+          },
+        },
+      },
     },
   },
   plugins: [],
