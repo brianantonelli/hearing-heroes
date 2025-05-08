@@ -29,7 +29,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Arial', 'sans-serif'],
+        sans: ['"ABeeZee"', 'Arial', 'sans-serif'],
       },
       animation: {
         shine: 'shine 2s ease-in-out infinite',

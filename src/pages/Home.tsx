@@ -146,7 +146,7 @@ const Home: React.FC = () => {
             />
           ))}
       </div>
-      
+
       {/* Parent area button in upper right */}
       <div className="absolute top-4 right-4 z-20">
         {state.enableAnimations ? (
@@ -167,7 +167,7 @@ const Home: React.FC = () => {
           </button>
         )}
       </div>
-      
+
       {/* Music control button in upper left */}
       <div className="absolute top-4 left-4 z-20">
         <button
@@ -182,7 +182,7 @@ const Home: React.FC = () => {
         </button>
       </div>
 
-      <div className="flex flex-col items-center justify-center mt-8 relative z-10">
+      <div className="flex flex-col items-center justify-center mt-6 relative z-10">
         <div className="flex items-center justify-center w-full mb-4">
           {state.enableAnimations ? (
             <>

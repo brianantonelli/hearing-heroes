@@ -175,11 +175,12 @@ const GameButton: React.FC<GameButtonProps> = ({
           new PIXI.TextStyle({
             fill: textColor,
             fontSize: fontSize * 0.8, // Slightly smaller text
-            fontFamily: 'Arial',
+            fontFamily: 'ABeeZee, Arial, sans-serif',
             fontWeight: 'bold',
             dropShadow: enableAnimations,
             dropShadowAlpha: 0.5,
             dropShadowDistance: 2,
+            letterSpacing: 1
           })
         }
       />

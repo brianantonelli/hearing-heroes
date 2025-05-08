@@ -32,7 +32,9 @@ const GamePrompt: React.FC<GamePromptProps> = ({
         style={new PIXI.TextStyle({
           fill: color,
           fontSize: fontSize,
-          fontFamily: 'Arial',
+          fontFamily: 'ABeeZee, Arial, sans-serif',
+          fontWeight: '500',
+          letterSpacing: 0.5,
           align: align,
           wordWrap: width > 0,
           wordWrapWidth: width
