@@ -1,0 +1,37 @@
+pass:
+  - text: Correct!
+    audio: correct.mp3
+  - text: Fantastic!
+    audio: fantastic.mp3
+  - text: Great Work!
+    audio: great_work.mp3
+  - text: Nailed It!
+    audio: nailed_it.mp3
+  - text: Super!
+    audio: super.mp3
+  - text: You Got It!
+    audio: you_got_it.mp3
+  - text: Awesome!
+    audio: awesome.mp3
+  - text: Well Done!
+    audio: well_done.mp3
+  - text: Excellent!
+    audio: excellent.mp3
+  - text: Perfect!
+    audio: perfect.mp3
+
+fail:
+  - text: So close!
+    audio: so_close.mp3
+  - text: Next time!
+    audio: next_time.mp3
+  - text: Almost Got It!
+    audio: almost_got_it.mp3
+  - text: Keep Trying!
+    audio: keep_trying.mp3
+  - text: Good Effort!
+    audio: good_effort.mp3
+  - text: You Can Do It!
+    audio: you_can_do_it.mp3
+  - text: Don't Give Up!
+    audio: dont_give_up.mp3
