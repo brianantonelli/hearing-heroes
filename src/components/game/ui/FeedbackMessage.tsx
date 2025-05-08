@@ -20,7 +20,7 @@ const FEEDBACK_EMOJIS = {
 /**
  * Component for displaying dynamic feedback after a selection
  * with randomized messages and large emojis from speech.yml
- * 
+ *
  * For incorrect answers only - correct answers are handled by CelebrationAnimation
  */
 const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
@@ -33,33 +33,33 @@ const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
   // State for feedback text and emoji
   const [feedbackText, setFeedbackText] = useState<string>('');
   const [feedbackEmoji, setFeedbackEmoji] = useState<string>('');
-  
+
   // Load and play feedback when component mounts or isCorrect changes
   useEffect(() => {
     // Only run this effect when isCorrect changes and is not null
     // AND only for incorrect answers (correct answers handled by CelebrationAnimation)
     if (isCorrect === null || isCorrect === true) return;
-    
+
     // Set a loading state
     setFeedbackText('');
     setFeedbackEmoji('');
-    
-    const loadFeedback = async () => {      
+
+    const loadFeedback = async () => {
       try {
         // Initialize service if needed
         await speechService.initialize();
-        
+
         // Get random feedback AND play the corresponding audio in one call
         // This ensures text and audio are perfectly synchronized
         const text = await speechService.playRandomFeedback('fail');
-        
+
         // Set the feedback text that matches the audio
         setFeedbackText(text);
-        
+
         // Set random emoji for fail feedback
         const emojis = FEEDBACK_EMOJIS.fail;
         setFeedbackEmoji(emojis[Math.floor(Math.random() * emojis.length)]);
-        
+
         console.log(`Feedback displayed: ${text} (fail)`);
       } catch (error) {
         console.error('Error loading feedback:', error);
@@ -68,7 +68,7 @@ const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
         setFeedbackEmoji('🤔');
       }
     };
-    
+
     loadFeedback();
   }, [isCorrect]);
 
@@ -100,10 +100,10 @@ const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
           new PIXI.TextStyle({
             fill: color,
             fontSize: textSize * 1.5, // Increased text size for better visibility
-            fontFamily: 'Arial',
+            fontFamily: 'ABeeZee, Arial, sans-serif',
             fontWeight: 'bold',
             dropShadow: true,
-            dropShadowAlpha: 0.4, 
+            dropShadowAlpha: 0.4,
             dropShadowDistance: 2,
           })
         }

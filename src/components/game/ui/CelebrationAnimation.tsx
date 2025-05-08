@@ -32,20 +32,20 @@ interface CelebrationAnimationProps {
 
 const generateConfetti = (width: number, height: number): Confetti[] => {
   const confetti: Confetti[] = [];
-  
+
   // Colors for confetti
   const colors = [
-    0xF94144, // red
-    0xF3722C, // orange
-    0xF8961E, // yellow-orange
-    0xF9C74F, // yellow
-    0x90BE6D, // yellowish-green
-    0x43AA8B, // teal
+    0xf94144, // red
+    0xf3722c, // orange
+    0xf8961e, // yellow-orange
+    0xf9c74f, // yellow
+    0x90be6d, // yellowish-green
+    0x43aa8b, // teal
     0x577590, // blue
-    0x9381FF, // purple
-    0xFF99C8, // pink
+    0x9381ff, // purple
+    0xff99c8, // pink
   ];
-  
+
   for (let i = 0; i < CONFETTI_COUNT; i++) {
     confetti.push({
       x: width / 2,
@@ -55,27 +55,27 @@ const generateConfetti = (width: number, height: number): Confetti[] => {
       color: colors[Math.floor(Math.random() * colors.length)],
       speedX: (Math.random() - 0.5) * INITIAL_VELOCITY,
       speedY: (Math.random() - 1) * INITIAL_VELOCITY,
-      rotationSpeed: (Math.random() - 0.5) * 0.2
+      rotationSpeed: (Math.random() - 0.5) * 0.2,
     });
   }
-  
+
   return confetti;
 };
 
 const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
-  width, 
+  width,
   height,
   onComplete,
-  feedbackText
+  feedbackText,
 }) => {
   const { state } = useAppContext();
   const [confetti, setConfetti] = useState<Confetti[]>([]);
   const [isActive, setIsActive] = useState(true);
   const [celebrationText, setCelebrationText] = useState<string>(feedbackText || '');
-  
+
   // Skip animation if animations are disabled in preferences
   const skipAnimation = !state.enableAnimations;
-  
+
   // Get a random celebration text if no feedbackText is provided
   useEffect(() => {
     if (!feedbackText && !celebrationText) {
@@ -83,7 +83,7 @@ const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
         try {
           // Initialize speech service if needed
           await speechService.initialize();
-          
+
           // Get random success feedback and play it
           // We use playRandomFeedback to ensure text and audio are synchronized
           const text = await speechService.playRandomFeedback('pass');
@@ -93,11 +93,11 @@ const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
           setCelebrationText('Great job!'); // Fallback
         }
       };
-      
+
       getRandomText();
     }
   }, [feedbackText, celebrationText]);
-  
+
   // Generate confetti on component mount and handle cleanup
   useEffect(() => {
     if (skipAnimation) {
@@ -106,18 +106,18 @@ const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
       }
       return;
     }
-    
+
     // Reset state when the component mounts
     setIsActive(true);
-    
+
     // Generate initial confetti
     setConfetti(generateConfetti(width, height));
-    
+
     // End the animation after the duration
     const animationTimer = setTimeout(() => {
       // First set active to false to stop animations
       setIsActive(false);
-      
+
       // Small delay before calling onComplete to ensure animations have stopped
       setTimeout(() => {
         // Make sure we always call onComplete, even if there's an error
@@ -130,7 +130,7 @@ const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
         }
       }, 50);
     }, ANIMATION_DURATION);
-    
+
     // Clean up all timers when component unmounts
     return () => {
       clearTimeout(animationTimer);
@@ -138,22 +138,22 @@ const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
       setIsActive(false);
     };
   }, [width, height, onComplete, skipAnimation]);
-  
+
   // Update confetti positions with a simple approach that doesn't use state updates
   // This prevents excessive re-renders that might cause the errors
   const animationRef = React.useRef<number>();
   const confettiRef = React.useRef<Confetti[]>([]);
-  
+
   useEffect(() => {
     if (skipAnimation || !isActive) return;
-    
+
     // Initial confetti
     confettiRef.current = generateConfetti(width, height);
-    
+
     // Animation function that doesn't use setState during the animation
     const animate = () => {
       if (!isActive) return;
-      
+
       // Update positions directly in the ref
       confettiRef.current = confettiRef.current.map(c => ({
         ...c,
@@ -162,17 +162,17 @@ const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
         rotation: c.rotation + c.rotationSpeed,
         speedY: c.speedY + GRAVITY,
       }));
-      
+
       // Update the state less frequently to avoid re-render issues
       setConfetti([...confettiRef.current]);
-      
+
       // Continue animation
       animationRef.current = requestAnimationFrame(animate);
     };
-    
+
     // Start animation
     animationRef.current = requestAnimationFrame(animate);
-    
+
     // Cleanup
     return () => {
       if (animationRef.current) {
@@ -180,9 +180,9 @@ const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
       }
     };
   }, [width, height, skipAnimation, isActive]);
-  
+
   if (skipAnimation || !isActive) return null;
-  
+
   return (
     <Container>
       {/* Confetti particles */}
@@ -199,15 +199,15 @@ const CelebrationAnimation: React.FC<CelebrationAnimationProps> = ({
           tint={c.color}
         />
       ))}
-      
+
       {/* Celebration text - uses the text that matches the audio feedback */}
       <Container position={[width / 2, height / 2 - 50]}>
         <Text
-          text={celebrationText || "Great job!"}
+          text={celebrationText || 'Great job!'}
           anchor={0.5}
           style={
             new PIXI.TextStyle({
-              fontFamily: 'Arial',
+              fontFamily: 'ABeeZee, Arial, sans-serif',
               fontSize: 48,
               fontWeight: 'bold',
               fill: '#FF9900',

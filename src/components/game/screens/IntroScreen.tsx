@@ -223,7 +223,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
           new PIXI.TextStyle({
             fill: 0x333333,
             fontSize: 42,
-            fontFamily: 'Arial',
+            fontFamily: 'ABeeZee, Arial, sans-serif',
             fontWeight: 'bold',
             dropShadow: true,
             dropShadowAlpha: 0.4,
@@ -242,7 +242,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
           new PIXI.TextStyle({
             fill: getReadyTextColor(),
             fontSize: 48,
-            fontFamily: 'Arial',
+            fontFamily: 'ABeeZee, Arial, sans-serif',
             fontWeight: 'bold',
             dropShadow: true,
             dropShadowAlpha: 0.3,

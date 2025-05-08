@@ -326,7 +326,7 @@ const CompleteScreen: React.FC<CompleteScreenProps> = ({ score, width, height, o
           new PIXI.TextStyle({
             fill: 0x22cc22,
             fontSize: 42,
-            fontFamily: 'Arial',
+            fontFamily: 'ABeeZee, Arial, sans-serif',
             fontWeight: 'bold',
             dropShadow: true,
             dropShadowAlpha: 0.3,
@@ -356,7 +356,7 @@ const CompleteScreen: React.FC<CompleteScreenProps> = ({ score, width, height, o
           new PIXI.TextStyle({
             fill: 0x333333,
             fontSize: 32,
-            fontFamily: 'Arial',
+            fontFamily: 'ABeeZee, Arial, sans-serif',
             fontWeight: 'bold',
           })
         }
@@ -372,7 +372,7 @@ const CompleteScreen: React.FC<CompleteScreenProps> = ({ score, width, height, o
           new PIXI.TextStyle({
             fill: 0x333333,
             fontSize: 24,
-            fontFamily: 'Arial',
+            fontFamily: 'ABeeZee, Arial, sans-serif',
           })
         }
       />
