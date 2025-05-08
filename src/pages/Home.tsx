@@ -57,12 +57,27 @@ const Home: React.FC = () => {
         }
       };
       
-      // Add the listener (only if music is not already playing)
-      document.addEventListener('click', enableMusicOnDocumentClick);
+      // Add visibility change handler to update UI state when music stops
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'hidden') {
+          // When page is hidden, we know music will pause (see audioService)
+          // so update our UI state to reflect this
+          setMusicPlaying(false);
+        } else if (document.visibilityState === 'visible') {
+          // When page becomes visible again, check if music is playing
+          // This ensures our UI correctly reflects the actual music state
+          setMusicPlaying(audioService.isBackgroundMusicPlaying());
+        }
+      };
       
-      // Clean up the listener when component unmounts
+      // Add the listeners
+      document.addEventListener('click', enableMusicOnDocumentClick);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      
+      // Clean up all listeners when component unmounts
       return () => {
         document.removeEventListener('click', enableMusicOnDocumentClick);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
         audioService.pauseBackgroundMusic();
       };
     } else {

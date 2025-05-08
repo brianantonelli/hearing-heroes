@@ -49,6 +49,30 @@ export class AudioService {
   
   // Background music reference
   private backgroundMusic: HTMLAudioElement | null = null;
+  
+  // Track if app is in background/screen is locked
+  private isAppInBackground: boolean = false;
+  
+  constructor() {
+    // Set up iOS wake lock handling if in browser environment
+    if (typeof document !== 'undefined') {
+      // Add event listeners for iOS handling
+      document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+    }
+  }
+  
+  /**
+   * Handle visibility change events
+   */
+  private handleVisibilityChange(): void {
+    if (document.visibilityState === 'hidden') {
+      this.isAppInBackground = true;
+      this.pauseBackgroundMusic();
+    } else if (document.visibilityState === 'visible') {
+      this.isAppInBackground = false;
+      // Don't auto resume - we'll let user interaction handle that
+    }
+  }
 
   /**
    * Play a word audio prompt
@@ -224,9 +248,58 @@ export class AudioService {
       
       // Preload the audio
       music.load();
+      
+      // Set up visibility change listener to handle screen locking/app backgrounding
+      this.setupVisibilityListeners();
     }
     
     return this.backgroundMusic;
+  }
+  
+  /**
+   * Setup event listeners to pause music when app goes to background or screen is locked
+   * This is particularly important for iOS devices
+   */
+  private setupVisibilityListeners(): void {
+    // Handle page visibility changes (works for tab switching and some device locks)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        // Page is hidden (minimized, tab switched, or screen locked)
+        this.pauseBackgroundMusic();
+      } else if (document.visibilityState === 'visible' && !this.isMuted) {
+        // Only auto-resume if not muted - this will still respect autoplay restrictions
+        // so music may not resume on iOS until next user interaction
+        this.playBackgroundMusic();
+      }
+    });
+    
+    // iOS specific events
+    if (typeof window !== 'undefined') {
+      // Handle iOS going to background
+      window.addEventListener('pagehide', () => {
+        this.pauseBackgroundMusic();
+      });
+      
+      // iOS low power mode or audio interruption
+      window.addEventListener('freeze', () => {
+        this.pauseBackgroundMusic();
+      });
+      
+      // iOS specific event for audio session interruption
+      // This catches phone calls and other audio interruptions
+      if (this.backgroundMusic) {
+        this.backgroundMusic.addEventListener('pause', () => {
+          // When audio is externally paused, update our internal state
+          // This prevents auto-resume when the interruption ends
+          // The user will need to tap something to restart music
+          if (this.backgroundMusic && this.backgroundMusic.paused) {
+            // We don't actually need to call pause again,
+            // just update our knowledge of music state
+            console.log('Audio was externally paused (interruption/system)');
+          }
+        });
+      }
+    }
   }
 
   /**
@@ -234,8 +307,8 @@ export class AudioService {
    * Will start the background music if it's not already playing
    */
   playBackgroundMusic(): void {
-    // Don't play music if muted
-    if (this.isMuted) return;
+    // Don't play music if muted or if the app is in the background
+    if (this.isMuted || this.isAppInBackground) return;
     
     // If we already have background music, just resume it
     if (this.backgroundMusic) {
@@ -331,8 +404,8 @@ export class AudioService {
     // Don't do anything if music is already playing
     if (this.isBackgroundMusicPlaying()) return;
     
-    // Don't play if muted
-    if (this.isMuted) return;
+    // Don't play if muted or if app is in background (e.g., screen locked)
+    if (this.isMuted || this.isAppInBackground) return;
     
     // Initialize music if it doesn't exist
     if (!this.backgroundMusic) {
