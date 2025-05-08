@@ -5,30 +5,42 @@ contrastTypes:
   - id: plosive-voiced-unvoiced
     name: "Plosive Voiced/Unvoiced"
     description: "Contrasts like p/b, t/d, k/g"
-  
+
   - id: fricative-voiced-unvoiced
     name: "Fricative Voiced/Unvoiced"
     description: "Contrasts like f/v, s/z"
-  
+
   - id: nasal-plosive
     name: "Nasal vs Plosive"
     description: "Contrasts like m/b, n/d"
-  
+
   - id: plosive-plosive
     name: "Plosive Place Contrast"
     description: "Contrasts like p/t, t/k"
-  
+
   - id: approximant-fricative
     name: "Approximant vs Fricative"
     description: "Contrasts like w/f, r/s"
-  
+
   - id: lateral-rhotic
     name: "Lateral vs Rhotic"
     description: "Contrasts like l/r"
-  
+
   - id: fricative-approximant
     name: "Fricative vs Approximant"
     description: "Contrasts like v/w"
+    
+  - id: velar-palatal
+    name: "Velar vs Palatal"
+    description: "Contrasts like k/j, g/y"
+    
+  - id: nasal-approximant
+    name: "Nasal vs Approximant"
+    description: "Contrasts like m/w, n/r"
+    
+  - id: nasal-fricative
+    name: "Nasal vs Fricative"
+    description: "Contrasts like m/f, n/s"
 
 wordPairs:
   # Level 1: Basic High-Contrast Consonants (Plosive pairs - voiced/unvoiced)
@@ -81,7 +93,7 @@ wordPairs:
     image2: gap.png
     contrastType: plosive-voiced-unvoiced
     difficultyLevel: 1
-  
+
   # Level 2: More Challenging Contrasts (Fricative pairs - voiced/unvoiced)
   - id: pair_06
     word1: fan
@@ -93,25 +105,6 @@ wordPairs:
     contrastType: fricative-voiced-unvoiced
     difficultyLevel: 2
 
-  - id: pair_07
-    word1: fine
-    word2: vine
-    audioPrompt1: fine.mp3
-    audioPrompt2: vine.mp3
-    image1: fine.png
-    image2: vine.png
-    contrastType: fricative-voiced-unvoiced
-    difficultyLevel: 2
-
-  - id: pair_08
-    word1: sue
-    word2: zoo
-    audioPrompt1: sue.mp3
-    audioPrompt2: zoo.mp3
-    image1: sue.png
-    image2: zoo.png
-    contrastType: fricative-voiced-unvoiced
-    difficultyLevel: 2
 
   - id: pair_09
     word1: sip
@@ -122,7 +115,7 @@ wordPairs:
     image2: zip.png
     contrastType: fricative-voiced-unvoiced
     difficultyLevel: 2
-  
+
   # Level 2: Nasal vs Plosive Contrasts
   - id: pair_10
     word1: mat
@@ -134,16 +127,6 @@ wordPairs:
     contrastType: nasal-plosive
     difficultyLevel: 2
 
-  - id: pair_11
-    word1: net
-    word2: debt
-    audioPrompt1: net.mp3
-    audioPrompt2: debt.mp3
-    image1: net.png
-    image2: debt.png
-    contrastType: nasal-plosive
-    difficultyLevel: 2
-  
   # Level 3: More Challenging - Place of Articulation Contrasts
   - id: pair_12
     word1: pin
@@ -164,7 +147,7 @@ wordPairs:
     image2: tape.png
     contrastType: plosive-plosive
     difficultyLevel: 3
-  
+
   # Level 3: Approximant vs Fricative Contrasts
   - id: pair_14
     word1: wake
@@ -185,7 +168,7 @@ wordPairs:
     image2: say.png
     contrastType: approximant-fricative
     difficultyLevel: 3
-  
+
   # Level 4: Most Challenging - L/R Distinction (often difficult)
   - id: pair_16
     word1: lake
@@ -197,15 +180,6 @@ wordPairs:
     contrastType: lateral-rhotic
     difficultyLevel: 4
 
-  - id: pair_17
-    word1: light
-    word2: right
-    audioPrompt1: light.mp3
-    audioPrompt2: right.mp3
-    image1: light.png
-    image2: right.png
-    contrastType: lateral-rhotic
-    difficultyLevel: 4
 
   - id: pair_18
     word1: lock
@@ -217,7 +191,6 @@ wordPairs:
     contrastType: lateral-rhotic
     difficultyLevel: 4
 
-  # The example that started it all - cave/wave
   - id: pair_19
     word1: cave
     word2: wave
@@ -226,4 +199,199 @@ wordPairs:
     image1: cave.png
     image2: wave.png
     contrastType: fricative-approximant
+    difficultyLevel: 3
+    
+  # New word pairs - Lateral-rhotic contrasts (Level 4)
+  - id: pair_20
+    word1: mat
+    word2: rat
+    audioPrompt1: mat.mp3
+    audioPrompt2: rat.mp3
+    image1: mat.png
+    image2: rat.png
+    contrastType: lateral-rhotic
+    difficultyLevel: 4
+    
+  - id: pair_21
+    word1: nail
+    word2: whale
+    audioPrompt1: nail.mp3
+    audioPrompt2: whale.mp3
+    image1: nail.png
+    image2: whale.png
+    contrastType: lateral-rhotic
+    difficultyLevel: 4
+    
+  - id: pair_22
+    word1: bell
+    word2: well
+    audioPrompt1: bell.mp3
+    audioPrompt2: well.mp3
+    image1: bell.png
+    image2: well.png
+    contrastType: lateral-rhotic
+    difficultyLevel: 4
+    
+  - id: pair_23
+    word1: tail
+    word2: nail
+    audioPrompt1: tail.mp3
+    audioPrompt2: nail.mp3
+    image1: tail.png
+    image2: nail.png
+    contrastType: lateral-rhotic
+    difficultyLevel: 4
+    
+  # Plosive voiced/unvoiced contrasts (Level 1-2)
+  - id: pair_24
+    word1: dog
+    word2: log
+    audioPrompt1: dog.mp3
+    audioPrompt2: log.mp3
+    image1: dog.png
+    image2: log.png
+    contrastType: plosive-voiced-unvoiced
+    difficultyLevel: 1
+    
+  - id: pair_25
+    word1: cake
+    word2: lake
+    audioPrompt1: cake.mp3
+    audioPrompt2: lake.mp3
+    image1: cake.png
+    image2: lake.png
+    contrastType: plosive-voiced-unvoiced
+    difficultyLevel: 1
+    
+  - id: pair_26
+    word1: kite
+    word2: write
+    audioPrompt1: kite.mp3
+    audioPrompt2: write.mp3
+    image1: kite.png
+    image2: write.png
+    contrastType: plosive-voiced-unvoiced
+    difficultyLevel: 2
+    
+  - id: pair_27
+    word1: kite
+    word2: night
+    audioPrompt1: kite.mp3
+    audioPrompt2: night.mp3
+    image1: kite.png
+    image2: night.png
+    contrastType: plosive-voiced-unvoiced
+    difficultyLevel: 2
+    
+  # Nasal vs others (Level 2-3)
+  - id: pair_28
+    word1: mane
+    word2: rain
+    audioPrompt1: mane.mp3
+    audioPrompt2: rain.mp3
+    image1: mane.png
+    image2: rain.png
+    contrastType: nasal-approximant
+    difficultyLevel: 3
+    
+  - id: pair_29
+    word1: meat
+    word2: feet
+    audioPrompt1: meat.mp3
+    audioPrompt2: feet.mp3
+    image1: meat.png
+    image2: feet.png
+    contrastType: nasal-fricative
+    difficultyLevel: 2
+    
+  - id: pair_30
+    word1: moo
+    word2: zoo
+    audioPrompt1: moo.mp3
+    audioPrompt2: zoo.mp3
+    image1: moo.png
+    image2: zoo.png
+    contrastType: nasal-fricative
+    difficultyLevel: 2
+    
+  # Velar/Palatal contrasts (Level 3)
+  - id: pair_31
+    word1: sack
+    word2: yak
+    audioPrompt1: sack.mp3
+    audioPrompt2: yak.mp3
+    image1: sack.png
+    image2: yak.png
+    contrastType: velar-palatal
+    difficultyLevel: 3
+    
+  - id: pair_32
+    word1: kick
+    word2: lick
+    audioPrompt1: kick.mp3
+    audioPrompt2: lick.mp3
+    image1: kick.png
+    image2: lick.png
+    contrastType: velar-palatal
+    difficultyLevel: 3
+    
+  - id: pair_33
+    word1: kneel
+    word2: wheel
+    audioPrompt1: kneel.mp3
+    audioPrompt2: wheel.mp3
+    image1: kneel.png
+    image2: wheel.png
+    contrastType: velar-palatal
+    difficultyLevel: 3
+    
+  - id: pair_34
+    word1: leap
+    word2: jeep
+    audioPrompt1: leap.mp3
+    audioPrompt2: jeep.mp3
+    image1: leap.png
+    image2: jeep.png
+    contrastType: velar-palatal
+    difficultyLevel: 3
+    
+  # Fricative vs other contrasts (Level 2-3)
+  - id: pair_35
+    word1: seed
+    word2: weed
+    audioPrompt1: seed.mp3
+    audioPrompt2: weed.mp3
+    image1: seed.png
+    image2: weed.png
+    contrastType: fricative-approximant
+    difficultyLevel: 2
+    
+  - id: pair_36
+    word1: net
+    word2: wet
+    audioPrompt1: net.mp3
+    audioPrompt2: wet.mp3
+    image1: net.png
+    image2: wet.png
+    contrastType: fricative-approximant
+    difficultyLevel: 2
+    
+  - id: pair_37
+    word1: rain
+    word2: chain
+    audioPrompt1: rain.mp3
+    audioPrompt2: chain.mp3
+    image1: rain.png
+    image2: chain.png
+    contrastType: approximant-fricative
+    difficultyLevel: 3
+    
+  - id: pair_38
+    word1: night
+    word2: white
+    audioPrompt1: night.mp3
+    audioPrompt2: white.mp3
+    image1: night.png
+    image2: white.png
+    contrastType: approximant-fricative
     difficultyLevel: 3
