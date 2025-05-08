@@ -16,6 +16,32 @@
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
   }
+  
+  /* Orientation handling for iOS devices */
+  @media screen and (orientation: portrait) {
+    body.ios-device .orientation-message {
+      display: flex;
+      position: fixed;
+      inset: 0;
+      background-color: white;
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      text-align: center;
+    }
+  }
+  
+  @media screen and (orientation: landscape) {
+    body.ios-device .orientation-message {
+      display: none;
+    }
+  }
+  
+  .orientation-message {
+    display: none;
+  }
 }
 
 @layer components {

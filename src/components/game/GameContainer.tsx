@@ -179,8 +179,10 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     const seed =
       currentPair.word1.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) +
       currentPair.word2.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    const shouldSwap = ((seed + currentPairIndex) % 7) > 3; // Using modulo 7 for more variation
-    const positions = shouldSwap ? [imagePositions[1], imagePositions[0]] : [imagePositions[0], imagePositions[1]];
+    const shouldSwap = (seed + currentPairIndex) % 7 > 3; // Using modulo 7 for more variation
+    const positions = shouldSwap
+      ? [imagePositions[1], imagePositions[0]]
+      : [imagePositions[0], imagePositions[1]];
 
     return (
       <Container>
@@ -213,7 +215,6 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
           isCorrect={selectedWord === currentPair.word2 ? isCorrect : null}
         />
 
-        {/* Replay button - more kid-friendly with prominent emoji */}
         {gameStatus === 'selection' && (
           <GameButton
             text="Listen Again"
@@ -254,7 +255,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
 
   // For complete screen, don't try to show any leftover celebrations
   const shouldShowCelebration = showCelebration && gameStatus !== 'complete';
-  
+
   return (
     <Stage
       width={width}
