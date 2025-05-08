@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createHashRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
 import './styles/index.css';
 import { routes } from './routes';
@@ -14,7 +14,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-const router = createBrowserRouter(routes);
+const router = createHashRouter(routes);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

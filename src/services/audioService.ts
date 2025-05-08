@@ -10,19 +10,25 @@ const DEFAULT_VOICE_VOLUME = 1.0;
 export enum AudioCategory {
   VOICE = 'voice',
   EFFECT = 'effect',
-  AMBIENT = 'ambient'
+  AMBIENT = 'ambient',
+  MUSIC = 'music'
 }
 
 // Audio file paths
 const AUDIO_BASE_PATH = '/audio';
 const AUDIO_PROMPTS_PATH = `${AUDIO_BASE_PATH}/prompts`;
 const AUDIO_FEEDBACK_PATH = `${AUDIO_BASE_PATH}/feedback`;
+const BACKGROUND_MUSIC = `${AUDIO_BASE_PATH}/bg.mp3`;
+
+// Default music volume
+const DEFAULT_MUSIC_VOLUME = 0.4;
 
 // Feedback sound filenames
 const AUDIO_FILES = {
   CORRECT: 'correct.mp3',
   INCORRECT: 'incorrect.mp3',
   LEVEL_COMPLETE: 'level_complete.mp3',
+  BACKGROUND: 'bg.mp3',
 }
 
 /**
@@ -35,10 +41,14 @@ export class AudioService {
   // Volume settings
   private effectVolume: number = DEFAULT_EFFECT_VOLUME;
   private voiceVolume: number = DEFAULT_VOICE_VOLUME;
+  private musicVolume: number = DEFAULT_MUSIC_VOLUME;
   private isMuted: boolean = false;
   
   // Currently playing sounds
   private currentSounds: HTMLAudioElement[] = [];
+  
+  // Background music reference
+  private backgroundMusic: HTMLAudioElement | null = null;
 
   /**
    * Play a word audio prompt
@@ -194,6 +204,171 @@ export class AudioService {
       // Load but don't play
       audio.load();
     });
+  }
+  
+  /**
+   * Initialize background music (create instance without playing)
+   * This prepares the music for playback without triggering autoplay restrictions
+   */
+  initBackgroundMusic(): HTMLAudioElement {
+    // Create new background music instance if it doesn't exist
+    if (!this.backgroundMusic) {
+      const music = new Audio(BACKGROUND_MUSIC);
+      
+      // Configure music playback
+      music.loop = true;
+      music.volume = this.musicVolume;
+      
+      // Store reference to control it later
+      this.backgroundMusic = music;
+      
+      // Preload the audio
+      music.load();
+    }
+    
+    return this.backgroundMusic;
+  }
+
+  /**
+   * Play background music in loop
+   * Will start the background music if it's not already playing
+   */
+  playBackgroundMusic(): void {
+    // Don't play music if muted
+    if (this.isMuted) return;
+    
+    // If we already have background music, just resume it
+    if (this.backgroundMusic) {
+      // This promise will resolve if browser allows autoplay, or reject if not
+      this.backgroundMusic.play().catch(error => {
+        console.warn("Browser prevented autoplay - music will play on next user interaction", error);
+      });
+      return;
+    }
+    
+    // Create new background music instance
+    const music = new Audio(BACKGROUND_MUSIC);
+    
+    // Configure music playback
+    music.loop = true;
+    music.volume = this.musicVolume;
+    
+    // Set up event listeners for user interaction to enable autoplay
+    const userInteractionEvents = ['click', 'touchstart', 'keydown'];
+    
+    const playOnUserInteraction = () => {
+      music.play().then(() => {
+        // Cleanup event listeners once we successfully play
+        userInteractionEvents.forEach(event => {
+          document.removeEventListener(event, playOnUserInteraction);
+        });
+        console.log('Background music started after user interaction');
+      }).catch(error => {
+        console.error("Failed to play music even after user interaction:", error);
+      });
+    };
+    
+    // Add event listeners to play on first user interaction
+    userInteractionEvents.forEach(event => {
+      document.addEventListener(event, playOnUserInteraction, { once: true });
+    });
+    
+    // Store reference to control it later
+    this.backgroundMusic = music;
+    
+    // Try to play immediately (likely will be blocked by browser)
+    music.play().catch(() => {
+      // Silent catch - we expect this to fail on first page load
+      // We'll rely on the user interaction events to start playback
+    });
+  }
+  
+  /**
+   * Pause background music
+   */
+  pauseBackgroundMusic(): void {
+    if (this.backgroundMusic) {
+      this.backgroundMusic.pause();
+    }
+  }
+  
+  /**
+   * Stop background music
+   */
+  stopBackgroundMusic(): void {
+    if (this.backgroundMusic) {
+      this.backgroundMusic.pause();
+      this.backgroundMusic.currentTime = 0;
+    }
+  }
+  
+  /**
+   * Set music volume
+   */
+  setMusicVolume(volume: number): void {
+    this.musicVolume = Math.max(0, Math.min(1, volume));
+    
+    // Update current background music volume if it exists
+    if (this.backgroundMusic) {
+      this.backgroundMusic.volume = this.musicVolume;
+    }
+  }
+  
+  /**
+   * Check if background music is currently playing
+   */
+  isBackgroundMusicPlaying(): boolean {
+    return !!this.backgroundMusic && 
+           !this.backgroundMusic.paused && 
+           !this.isMuted;
+  }
+  
+  /**
+   * Ensure music can play after user interaction
+   * Call this from click handlers to enable music in browsers with autoplay restrictions
+   */
+  enableMusicPlayback(): void {
+    // Don't do anything if music is already playing
+    if (this.isBackgroundMusicPlaying()) return;
+    
+    // Don't play if muted
+    if (this.isMuted) return;
+    
+    // Initialize music if it doesn't exist
+    if (!this.backgroundMusic) {
+      this.initBackgroundMusic();
+    }
+    
+    // Try to play - this should work after user interaction
+    if (this.backgroundMusic) {
+      this.backgroundMusic.play().catch(error => {
+        console.warn("Still couldn't play music after user interaction:", error);
+      });
+    }
+  }
+  
+  /**
+   * Toggle mute state - also affects background music
+   */
+  toggleMute(): boolean {
+    this.isMuted = !this.isMuted;
+    
+    // Stop all currently playing sounds if muted
+    if (this.isMuted) {
+      this.stopAll();
+      
+      // Also pause background music
+      if (this.backgroundMusic) {
+        this.backgroundMusic.pause();
+      }
+    } else {
+      // Resume background music if it exists
+      if (this.backgroundMusic) {
+        this.backgroundMusic.play().catch(console.error);
+      }
+    }
+    
+    return this.isMuted;
   }
 }
 

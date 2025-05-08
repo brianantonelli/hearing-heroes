@@ -11,6 +11,8 @@ export interface Preferences {
   
   // Game settings
   isAudioEnabled: boolean;
+  isMusicEnabled: boolean; // New setting for background music 
+  musicVolume: number;     // Volume for background music (0.0 to 1.0)
   currentLevel: number;
   maxSessionMinutes: number;
   difficultyMultiplier: number;

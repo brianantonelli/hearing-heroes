@@ -19,6 +19,8 @@ class PreferencesService {
         id,
         childName: 'Samantha',
         isAudioEnabled: true,
+        isMusicEnabled: true,
+        musicVolume: 0.4,
         currentLevel: 1,
         maxSessionMinutes: 15,
         difficultyMultiplier: 1.0,
@@ -75,6 +77,8 @@ class PreferencesService {
   appStateToPreferences(state: {
     childName: string;
     isAudioEnabled: boolean;
+    isMusicEnabled: boolean;
+    musicVolume: number;
     currentLevel: number;
     maxSessionMinutes: number;
     difficultyMultiplier: number;
@@ -86,6 +90,8 @@ class PreferencesService {
       id,
       childName: state.childName,
       isAudioEnabled: state.isAudioEnabled,
+      isMusicEnabled: state.isMusicEnabled,
+      musicVolume: state.musicVolume,
       currentLevel: state.currentLevel,
       maxSessionMinutes: state.maxSessionMinutes,
       difficultyMultiplier: state.difficultyMultiplier,
@@ -111,6 +117,8 @@ class PreferencesService {
       id,
       childName: 'Samantha',
       isAudioEnabled: true,
+      isMusicEnabled: true,
+      musicVolume: 0.4,
       currentLevel: 1,
       maxSessionMinutes: 15,
       difficultyMultiplier: 1.0,

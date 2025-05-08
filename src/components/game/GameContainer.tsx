@@ -97,7 +97,8 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
       window.location.reload();
     } else {
       // Otherwise return to home screen
-      window.location.href = '/';
+      // Use hash navigation since we're using createHashRouter
+      window.location.href = '/#/';
     }
   }, [handleNextLevel]);
 

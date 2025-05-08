@@ -74,7 +74,7 @@ const CompleteScreen: React.FC<CompleteScreenProps> = ({ score, width, height, o
   let message = '';
   let emoji = '';
   if (accuracy >= 90) {
-    message = 'Amazing job!';
+    message = 'Great job!';
     emoji = '🌟';
   } else if (accuracy >= 80) {
     message = 'Great job!';
@@ -150,7 +150,7 @@ const CompleteScreen: React.FC<CompleteScreenProps> = ({ score, width, height, o
       // Use specific file for level complete instead of the default
       audioService.playAudio('/audio/feedback/level_complete_great_job.mp3');
     }
-    
+
     if (skipAnimation) {
       // If animations are disabled, just show the completed state
       setTitleScale(1);

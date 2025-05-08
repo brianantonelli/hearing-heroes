@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import BackgroundAnimation from '../components/common/BackgroundAnimation';
 import Modal from '../components/common/Modal';
+import { audioService } from '../services/audioService';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { state, dispatch } = useAppContext();
   const [showNameModal, setShowNameModal] = useState(false);
   const [nameInput, setNameInput] = useState('');
+  const [musicPlaying, setMusicPlaying] = useState(false);
   
   // Check if this is a first-time visit or if the name is empty
   useEffect(() => {
@@ -19,17 +21,94 @@ const Home: React.FC = () => {
       setNameInput('');
     }
   }, [state.childName]);
+  
+  // Setup background music when page loads
+  useEffect(() => {
+    // Initialize the background music but don't autoplay
+    // This respects browser autoplay policies
+    if (state.isAudioEnabled) {
+      // Initialize background music
+      audioService.initBackgroundMusic();
+      
+      // Try playing - this will likely be blocked on first page load
+      // But will work after user interaction or when returning to this screen
+      audioService.playBackgroundMusic();
+      
+      // Check if music is actually playing 
+      // (this won't be completely accurate due to browser security restrictions)
+      const checkMusicPlaying = () => {
+        try {
+          if (audioService.isBackgroundMusicPlaying()) {
+            setMusicPlaying(true);
+          }
+        } catch (e) {
+          // Silently fail - we expect this might not work without user interaction
+        }
+      };
+      
+      // Try to detect if music is playing after a short delay
+      setTimeout(checkMusicPlaying, 100);
+      
+      // Add a document-wide click listener to enable music on any interaction
+      const enableMusicOnDocumentClick = () => {
+        if (!musicPlaying) {
+          audioService.enableMusicPlayback();
+          setMusicPlaying(audioService.isBackgroundMusicPlaying());
+        }
+      };
+      
+      // Add the listener (only if music is not already playing)
+      document.addEventListener('click', enableMusicOnDocumentClick);
+      
+      // Clean up the listener when component unmounts
+      return () => {
+        document.removeEventListener('click', enableMusicOnDocumentClick);
+        audioService.pauseBackgroundMusic();
+      };
+    } else {
+      // Clean up - pause music when navigating away
+      return () => {
+        audioService.pauseBackgroundMusic();
+      };
+    }
+  }, [state.isAudioEnabled, musicPlaying]);
+  
+  // Toggle background music
+  const toggleBackgroundMusic = () => {
+    if (musicPlaying) {
+      audioService.pauseBackgroundMusic();
+      setMusicPlaying(false);
+    } else {
+      // This method will properly handle browser autoplay restrictions
+      // since it's being called from a click handler (user interaction)
+      audioService.enableMusicPlayback();
+      setMusicPlaying(true);
+    }
+  };
+
+  // Try to start background music on any user interaction
+  const tryEnableMusicOnInteraction = () => {
+    if (state.isAudioEnabled && !musicPlaying) {
+      audioService.enableMusicPlayback();
+      setMusicPlaying(audioService.isBackgroundMusicPlaying());
+    }
+  };
 
   const handleStartGame = () => {
+    tryEnableMusicOnInteraction();
     navigate('/game');
   };
 
   const handleParentArea = () => {
+    tryEnableMusicOnInteraction();
     navigate('/parent');
   };
   
   const handleNameSubmit = () => {
     if (nameInput.trim()) {
+      // This is a user interaction, so try to enable music
+      tryEnableMusicOnInteraction();
+      
       dispatch({ type: 'SET_CHILD_NAME', payload: nameInput.trim() });
       setShowNameModal(false);
     }
@@ -117,7 +196,18 @@ const Home: React.FC = () => {
         )}
       </div>
 
-      <footer className="mt-8 w-full flex justify-end items-center px-2 relative z-10">
+      <footer className="mt-8 w-full flex justify-between items-center px-2 relative z-10">
+        {/* Music control button */}
+        <button 
+          className={`text-4xl transition-transform active:scale-110 filter drop-shadow-md ${state.enableAnimations ? 'hover:animate-bounce' : ''}`} 
+          onClick={toggleBackgroundMusic} 
+          aria-label={musicPlaying ? "Pause Music" : "Play Music"}
+          title={musicPlaying ? "Pause Music" : "Play Music"}
+        >
+          {musicPlaying ? '🔊' : '🔇'}
+        </button>
+      
+        {/* Settings/Parent area button */}
         {state.enableAnimations ? (
           <button 
             className="text-4xl active:rotate-45 transition-transform duration-300 active:scale-110 filter drop-shadow-md" 
