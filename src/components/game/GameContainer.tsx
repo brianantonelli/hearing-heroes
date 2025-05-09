@@ -12,6 +12,8 @@ import GameButton from './ui/GameButton';
 import GamePrompt from './ui/GamePrompt';
 import ProgressIndicator from './ui/ProgressIndicator';
 import CelebrationAnimation from './ui/CelebrationAnimation';
+import LoadingScreen from './ui/LoadingScreen';
+import BackgroundBubbles from './ui/BackgroundBubbles';
 
 // Screen Components
 import IntroScreen from './screens/IntroScreen';
@@ -33,7 +35,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
 
   // Check both app state and sessionStorage to determine if we should show level selection
   const skipLevelSelectionFromSession = sessionStorage.getItem('skipLevelSelection') === 'true';
-  
+
   // Track if we should show the level selection screen
   const [showLevelSelect, setShowLevelSelect] = useState(
     state.showLevelSelection && !state.levelSelectionShown && !skipLevelSelectionFromSession
@@ -41,14 +43,14 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
 
   // Track if we should show the celebration animation
   const [showCelebration, setShowCelebration] = useState(false);
-  
+
   // Ensure level 1 is default when level selection is shown
   useEffect(() => {
     if (showLevelSelect) {
       // Always start with level 1 selected when showing level selection
       dispatch({ type: 'SET_LEVEL', payload: 1 });
     }
-    
+
     // Clean up the session storage entry when component unmounts
     return () => {
       sessionStorage.removeItem('skipLevelSelection');
@@ -114,10 +116,10 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     if (movedToNextLevel) {
       // If we advanced to a new level, mark level selection as shown
       dispatch({ type: 'SET_LEVEL_SELECTION_SHOWN', payload: true });
-      
+
       // Store this in session storage to ensure it persists through reload
       sessionStorage.setItem('skipLevelSelection', 'true');
-      
+
       // Reload to start the new level
       window.location.reload();
     } else {
@@ -132,17 +134,17 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     (level: number) => {
       // Stop any playing audio immediately
       audioService.stopAll();
-      
+
       // Set the selected level
       dispatch({ type: 'SET_LEVEL', payload: level });
-      
+
       // Mark level selection as shown for this session in both app state and session storage
       dispatch({ type: 'SET_LEVEL_SELECTION_SHOWN', payload: true });
       sessionStorage.setItem('skipLevelSelection', 'true');
-      
+
       // Close the level selection screen
       setShowLevelSelect(false);
-      
+
       // No need to reload - the useGameState hook will detect the level change
       // and reload the word pairs for the new level automatically
     },
@@ -155,7 +157,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     try {
       // Set this to false to ensure the celebration animation is removed
       setShowCelebration(false);
-      console.log("Celebration animation complete");
+      console.log('Celebration animation complete');
     } catch (error) {
       console.error('Error in handleCelebrationComplete:', error);
     }
@@ -164,9 +166,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
   // Render the appropriate game content based on the current status
   const renderGameContent = () => {
     if (wordPairs.length === 0) {
-      return (
-        <GamePrompt text="✨ Loading Word Pairs ✨" x={width / 2} y={height / 2} fontSize={24} />
-      );
+      return <LoadingScreen width={width} height={height} />;
     }
 
     // Show level select before intro if enabled in preferences
@@ -264,6 +264,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
             fontSize={22}
             padding={10}
             backgroundColor={0x4caf50} /* Green color for better visibility */
+            animateIcon={false}
           />
         )}
 
@@ -304,7 +305,13 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
         resolution: window.devicePixelRatio || 1,
       }}
     >
+      {/* Background bubbles for all screens */}
+      {state.enableAnimations && gameStatus !== 'complete' && !showLevelSelect && (
+        <BackgroundBubbles width={width} height={height} />
+      )}
+      
       {renderGameContent()}
+      
       {shouldShowCelebration && gameStatus !== 'complete' && (
         <CelebrationAnimation
           width={width}

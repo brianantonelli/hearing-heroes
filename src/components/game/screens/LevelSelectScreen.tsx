@@ -3,6 +3,7 @@ import { Container, Graphics, Text, Sprite } from '@pixi/react';
 import { useAppContext } from '../../../context/AppContext';
 import { audioService } from '../../../services/audioService';
 import GameButton from '../ui/GameButton';
+import BackgroundAnimation from '../../common/BackgroundAnimation';
 import * as PIXI from 'pixi.js';
 
 interface LevelSelectScreenProps {
@@ -22,6 +23,19 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
   const [hoverLevel, setHoverLevel] = useState<number | null>(null);
   const [pulsePhases, setPulsePhases] = useState<number[]>([0, 0, 0, 0]);
   const [iconOffsets, setIconOffsets] = useState<number[]>([0, 0, 0, 0]);
+  const [titleHue, setTitleHue] = useState(0);
+  const [titleBounce, setTitleBounce] = useState(0);
+  const [titleScale, setTitleScale] = useState(1);
+  
+  // Animated background elements
+  const [bubbles, setBubbles] = useState<Array<{
+    x: number;
+    y: number;
+    radius: number;
+    color: number;
+    speed: number;
+    phase: number;
+  }>>([]);
 
   // Stop any playing audio when the level select screen appears
   useEffect(() => {
@@ -29,6 +43,24 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
     audioService.stopAll();
   }, []);
   
+  // Initialize bubbles for the background
+  useEffect(() => {
+    if (state.enableAnimations) {
+      // Create bubbles with fun properties
+      const newBubbles = Array.from({ length: 20 }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: 5 + Math.random() * 25,
+        color: [0x4287f5, 0x42d7f5, 0xf542a1, 0xf5d742, 0x42f56f][Math.floor(Math.random() * 5)],
+        speed: 0.2 + Math.random() * 0.8,
+        phase: Math.random() * Math.PI * 2,
+      }));
+      setBubbles(newBubbles);
+    } else {
+      setBubbles([]);
+    }
+  }, [state.enableAnimations, width, height]);
+
   // Handle animation effects
   useEffect(() => {
     if (!state.enableAnimations) return;
@@ -47,11 +79,42 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
       setIconOffsets(prev => prev.map((offset, i) => Math.sin(Date.now() / 800 + i * 1.5) * 3));
     }, 50);
 
+    // Bubble movement animation
+    const bubbleTimer = setInterval(() => {
+      setBubbles(prev => 
+        prev.map(bubble => ({
+          ...bubble,
+          y: bubble.y - bubble.speed,
+          x: bubble.x + Math.sin(bubble.phase + Date.now() / 2000) * 0.5,
+          // Reset bubble position when it goes off screen
+          ...(bubble.y < -bubble.radius ? {
+            x: Math.random() * width,
+            y: height + bubble.radius,
+            phase: Math.random() * Math.PI * 2,
+          } : {})
+        }))
+      );
+    }, 30);
+
+    // Rainbow title animation
+    const titleAnimationTimer = setInterval(() => {
+      // Update hue for rainbow effect (0-360)
+      setTitleHue(prev => (prev + 2) % 360);
+      
+      // Update bounce effect
+      setTitleBounce(Math.sin(Date.now() / 300) * 5);
+      
+      // Update scale for pulse effect
+      setTitleScale(1 + Math.sin(Date.now() / 600) * 0.05);
+    }, 30);
+
     return () => {
       clearInterval(pulseTimer);
       clearInterval(iconTimer);
+      clearInterval(bubbleTimer);
+      clearInterval(titleAnimationTimer);
     };
-  }, [state.enableAnimations]);
+  }, [state.enableAnimations, width, height]);
 
   // Define levels with their descriptions and icons
   const levels = [
@@ -150,22 +213,256 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
   // Apply a small vertical offset to better center the grid in the available space
   const verticalOffset = 20;
 
+  // Draw bubbles for the animated background
+  const drawBubble = React.useCallback(
+    (g: PIXI.Graphics, bubble: typeof bubbles[0]) => {
+      g.clear();
+      
+      // Draw a gradient-like bubble with alpha
+      g.beginFill(bubble.color, 0.4);
+      g.drawCircle(bubble.x, bubble.y, bubble.radius);
+      g.endFill();
+
+      // Highlight on top
+      g.beginFill(0xFFFFFF, 0.3);
+      g.drawCircle(
+        bubble.x - bubble.radius * 0.3, 
+        bubble.y - bubble.radius * 0.3, 
+        bubble.radius * 0.3
+      );
+      g.endFill();
+    },
+    []
+  );
+
   return (
     <Container>
-      <Text
-        text="Choose Your Level"
-        anchor={0.5}
-        x={centerX}
-        y={40}
-        style={
-          new PIXI.TextStyle({
-            fill: 0x333333,
-            fontSize: 24,
-            fontFamily: 'ABeeZee, Arial, sans-serif',
-            letterSpacing: 0.5,
-          })
-        }
-      />
+      {/* Background with fun bubbles */}
+      {state.enableAnimations && bubbles.map((bubble, index) => (
+        <Graphics key={index} draw={(g) => drawBubble(g, bubble)} />
+      ))}
+
+      {/* Add some fun stars in the corners */}
+      {state.enableAnimations && (
+        <>
+          <Text
+            text="✨"
+            x={30}
+            y={30}
+            anchor={0.5}
+            alpha={0.6}
+            rotation={Date.now() / 3000}
+            scale={{ x: 1 + Math.sin(Date.now() / 1000) * 0.1, y: 1 + Math.sin(Date.now() / 1000) * 0.1 }}
+            style={new PIXI.TextStyle({ fontSize: 30 })}
+          />
+          <Text
+            text="✨"
+            x={width - 30}
+            y={30}
+            anchor={0.5}
+            alpha={0.6}
+            rotation={-Date.now() / 3500}
+            scale={{ x: 1 + Math.sin(Date.now() / 950) * 0.1, y: 1 + Math.sin(Date.now() / 950) * 0.1 }}
+            style={new PIXI.TextStyle({ fontSize: 35 })}
+          />
+          <Text
+            text="✨"
+            x={width - 50}
+            y={height - 50}
+            anchor={0.5}
+            alpha={0.6}
+            rotation={Date.now() / 4000}
+            scale={{ x: 1 + Math.sin(Date.now() / 900) * 0.1, y: 1 + Math.sin(Date.now() / 900) * 0.1 }}
+            style={new PIXI.TextStyle({ fontSize: 40 })}
+          />
+          <Text
+            text="✨"
+            x={50}
+            y={height - 50}
+            anchor={0.5}
+            alpha={0.6}
+            rotation={-Date.now() / 3200}
+            scale={{ x: 1 + Math.sin(Date.now() / 1050) * 0.1, y: 1 + Math.sin(Date.now() / 1050) * 0.1 }}
+            style={new PIXI.TextStyle({ fontSize: 30 })}
+          />
+        </>
+      )}
+
+      {/* Regular title when animations are disabled */}
+      {!state.enableAnimations && (
+        <Text
+          text="Choose Your Level"
+          anchor={0.5}
+          x={centerX}
+          y={40}
+          style={
+            new PIXI.TextStyle({
+              fill: 0x333333,
+              fontSize: 28,
+              fontFamily: 'ABeeZee, Arial, sans-serif',
+              letterSpacing: 1,
+              fontWeight: 'bold'
+            })
+          }
+        />
+      )}
+      
+      {/* Super kid-friendly title with fun elements */}
+      {state.enableAnimations && (
+        <Container position={[centerX, 40]}>
+          {/* Fun cloud background */}
+          <Graphics
+            draw={(g) => {
+              g.clear();
+              
+              // Fun cloud-like shape with soft blue background
+              g.beginFill(0xCCE6FF, 0.5);
+              g.drawRoundedRect(-190, -30, 380, 60, 25);
+              
+              // Add bubbly edges to the cloud
+              const numBubbles = 10;
+              const edgeRadius = 15;
+              for (let i = 0; i < numBubbles; i++) {
+                const angle = (i / numBubbles) * Math.PI * 2;
+                const xOffset = Math.cos(angle) * 190;
+                const yOffset = Math.sin(angle) * 30;
+                g.drawCircle(xOffset, yOffset, edgeRadius + Math.sin(Date.now() / 1000 + i) * 2);
+              }
+              
+              g.endFill();
+              
+              // Add a colorful border
+              const borderColors = [
+                0xFF9999, // Light red
+                0xFFCC99, // Light orange
+                0xFFFF99, // Light yellow  
+                0x99FF99, // Light green
+                0x99FFFF, // Light cyan
+                0x9999FF  // Light blue
+              ];
+              
+              g.lineStyle(4, borderColors[Math.floor(Date.now() / 500) % borderColors.length], 0.7);
+              g.drawRoundedRect(-190, -30, 380, 60, 25);
+            }}
+          />
+          
+          {/* Cartoon-like decorations */}
+          <Text
+            text="🌈"
+            anchor={0.5}
+            x={-210 + Math.sin(Date.now() / 1000) * 5}
+            y={0}
+            scale={0.8}
+            style={new PIXI.TextStyle({ fontSize: 30 })}
+          />
+          
+          <Text
+            text="⭐"
+            anchor={0.5}
+            x={210 - Math.sin(Date.now() / 1000) * 5}
+            y={0}
+            rotation={Date.now() / 2000}
+            scale={0.8}
+            style={new PIXI.TextStyle({ fontSize: 30 })}
+          />
+          
+          {/* Individual animated letters */}
+          {"Pick a Level!".split('').map((letter, i) => {
+            // Calculate individual letter position and effects
+            const position = i * 22 - 100; // Centered positioning
+            const letterHue = (titleHue + i * 15) % 360; // Staggered colors
+            const letterY = letter === ' ' ? 0 : titleBounce * Math.sin(i * 0.7 + Date.now() / 300);
+            const letterRotation = letter === ' ' ? 0 : Math.sin(Date.now() / 800 + i * 0.5) * 0.15;
+            
+            // Convert HSL to hex color
+            const h = letterHue / 360;
+            const s = 0.8;  // More saturated colors
+            const l = 0.55; // Brighter colors
+            const c = (1 - Math.abs(2 * l - 1)) * s;
+            const x = c * (1 - Math.abs((h * 6) % 2 - 1));
+            const m = l - c / 2;
+            let r, g, b;
+            if (h < 1/6) { r = c; g = x; b = 0; }
+            else if (h < 2/6) { r = x; g = c; b = 0; }
+            else if (h < 3/6) { r = 0; g = c; b = x; }
+            else if (h < 4/6) { r = 0; g = x; b = c; }
+            else if (h < 5/6) { r = x; g = 0; b = c; }
+            else { r = c; g = 0; b = x; }
+            
+            const color = Math.round((r + m) * 255) * 65536 + Math.round((g + m) * 255) * 256 + Math.round((b + m) * 255);
+            
+            // For uppercase letters, make them extra fancy
+            const isUpperCase = letter === letter.toUpperCase() && letter !== ' ';
+            
+            return (
+              <Text
+                key={i}
+                text={letter}
+                anchor={0.5}
+                x={position}
+                y={letterY}
+                rotation={letterRotation}
+                scale={titleScale * (isUpperCase ? 1.2 : 1)}
+                style={
+                  new PIXI.TextStyle({
+                    fill: color,
+                    fontSize: 36,
+                    fontFamily: 'ABeeZee, Arial, sans-serif',
+                    fontWeight: 'bold',
+                    dropShadow: true,
+                    dropShadowColor: 0x333333,
+                    dropShadowDistance: 2,
+                    dropShadowAlpha: 0.5,
+                    stroke: 0xFFFFFF,
+                    strokeThickness: 2,
+                  })
+                }
+              />
+            );
+          })}
+          
+          {/* Add animated playful elements */}
+          <Text
+            text="🎮"
+            x={-135 + Math.sin(Date.now() / 1200) * 10}
+            y={-20 + Math.cos(Date.now() / 1000) * 5}
+            scale={0.75}
+            anchor={0.5}
+            style={new PIXI.TextStyle({ fontSize: 24 })}
+          />
+          
+          <Text
+            text="🎯"
+            x={135 - Math.sin(Date.now() / 1200) * 10}
+            y={-20 + Math.cos(Date.now() / 1000) * 5}
+            scale={0.75}
+            anchor={0.5}
+            style={new PIXI.TextStyle({ fontSize: 24 })}
+          />
+          
+          {/* Dashed underline */}
+          <Graphics
+            draw={(g) => {
+              g.clear();
+              g.lineStyle(4, 0xFFFFFF, 0.7);
+              
+              // Draw dashed line
+              const dashLength = 10;
+              const gapLength = 7;
+              const lineWidth = 220;
+              const startX = -lineWidth / 2;
+              const offsetY = 25;
+              
+              let x = startX;
+              while (x < startX + lineWidth) {
+                g.moveTo(x, offsetY);
+                g.lineTo(x + dashLength, offsetY);
+                x += dashLength + gapLength;
+              }
+            }}
+          />
+        </Container>
+      )}
 
       {/* Level buttons in 2x2 grid */}
       {levels.map((level, index) => {

@@ -54,8 +54,62 @@
     @apply flex justify-center items-center h-full w-full bg-white;
   }
 
+  @keyframes bounce-letters {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-15px);
+    }
+  }
+  
   .loading-animation {
-    @apply text-2xl text-primary animate-pulse;
+    @apply flex items-center justify-center gap-2 text-4xl font-bold text-primary;
+  }
+
+  .loading-animation .letter {
+    @apply inline-block;
+    animation: bounce-letters 0.8s infinite;
+  }
+  
+  .loading-animation .letter:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+  
+  .loading-animation .letter:nth-child(3) {
+    animation-delay: 0.2s;
+  }
+  
+  .loading-animation .letter:nth-child(4) {
+    animation-delay: 0.3s;
+  }
+  
+  .loading-animation .letter:nth-child(5) {
+    animation-delay: 0.4s;
+  }
+  
+  .loading-animation .letter:nth-child(6) {
+    animation-delay: 0.5s;
+  }
+  
+  .loading-animation .letter:nth-child(7) {
+    animation-delay: 0.6s;
+  }
+  
+  .loading-animation .letter:nth-child(8) {
+    animation-delay: 0.7s;
+  }
+  
+  .loading-animation .letter:nth-child(9) {
+    animation-delay: 0.8s;
+  }
+  
+  .loading-animation .letter:nth-child(10) {
+    animation-delay: 0.9s;
+  }
+  
+  .loading-animation .letter:nth-child(11) {
+    animation-delay: 1.0s;
   }
   
   /* Apply ABeeZee font to specific components */
@@ -186,6 +240,19 @@
   
   .animate-rainbow-border {
     animation: rainbow-border 7s linear infinite;
+  }
+  
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
   }
 
   .btn {

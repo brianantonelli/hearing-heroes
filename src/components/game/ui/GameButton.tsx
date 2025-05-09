@@ -14,6 +14,7 @@ interface GameButtonProps {
   padding?: number;
   width?: number;
   icon?: string;
+  animateIcon?: boolean;
 }
 
 /**
@@ -30,6 +31,7 @@ const GameButton: React.FC<GameButtonProps> = ({
   padding = 10,
   width = 200,
   icon,
+  animateIcon = true,
 }) => {
   const { state } = useAppContext();
   const { enableAnimations } = state;
@@ -52,7 +54,7 @@ const GameButton: React.FC<GameButtonProps> = ({
 
   // Handle animations
   useEffect(() => {
-    if (!enableAnimations) return;
+    if (!enableAnimations || !animateIcon) return;
 
     // Subtle pulse animation
     pulseTimer.current = setInterval(() => {

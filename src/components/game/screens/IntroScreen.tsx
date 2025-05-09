@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Container, Text, Sprite } from '@pixi/react';
+import { Container, Text, Sprite, Graphics } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import { useAppContext } from '../../../context/AppContext';
 import { audioService } from '../../../services/audioService';
@@ -34,6 +34,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
   const [readyText, setReadyText] = useState('Get ready...');
   const [particles, setParticles] = useState<Particle[]>([]);
   const [iconSize, setIconSize] = useState(0);
+  const [animTime, setAnimTime] = useState(0);
 
   // Animation references
   const particlesRef = useRef<Particle[]>([]);
@@ -42,8 +43,8 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
   // Skip animations if disabled in preferences
   const skipAnimation = !state.enableAnimations;
 
-  // Level icons - map level number to fun emoji
-  const levelIcons = ['🔊', '🎯', '🌟', '🚀', '🏆'];
+  // Level icons - map level number to fun kid-friendly emoji
+  const levelIcons = ['🌈', '🌟', '🎮', '🚀', '🏆'];
   const levelIcon = levelIcons[levelNumber - 1] || '🎮';
 
   // Generate colorful particles
@@ -69,11 +70,24 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
 
   // Initialize animations and play sound
   useEffect(() => {
-    // Play ready set go audio
-    if (state.isAudioEnabled) {
-      audioService.playAudio('/audio/feedback/ready_set_go.mp3');
+    // Play ready set go audio - make sure it plays after a small delay
+    try {
+      if (state.isAudioEnabled) {
+        // Small delay ensures audio context is ready
+        const audioTimer = setTimeout(() => {
+          try {
+            audioService.playAudio('/audio/feedback/ready_set_go.mp3');
+          } catch (err) {
+            console.error('Error playing audio:', err);
+          }
+        }, 200);
+        
+        return () => clearTimeout(audioTimer);
+      }
+    } catch (err) {
+      console.error('Error in audio setup:', err);
     }
-
+    
     if (skipAnimation) {
       setTitleScale(1);
       setReadyScale(1);
@@ -137,11 +151,14 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
     };
   }, [width, height, skipAnimation, state.isAudioEnabled]);
 
-  // Animate particles
+  // Animate particles and handle animation time
   useEffect(() => {
     if (skipAnimation) return;
 
     const animate = () => {
+      // Update animation time for all components
+      setAnimTime(Date.now());
+      
       // Update particles
       particlesRef.current = particlesRef.current.map(p => ({
         ...p,
@@ -182,52 +199,69 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
     }
   };
 
+  // Get a more fun background color for each level
+  const getBgColor = () => {
+    const colors = [
+      0xe6f7ff, // Light blue for level 1
+      0xfff1e6, // Light orange for level 2
+      0xf0ffe6, // Light green for level 3
+      0xffe6f0, // Light pink for level 4
+      0xfff9e6, // Light yellow for level 5
+    ];
+    return colors[(levelNumber - 1) % colors.length];
+  };
+  
+  // Skip to ready text for debugging
+  useEffect(() => {
+    if (!skipAnimation && state.isAudioEnabled) {
+      setTimeout(() => { setReadyText('Ready...'); }, 800);
+      setTimeout(() => { setReadyText('Set...'); }, 1600);
+      setTimeout(() => { setReadyText('Go!'); }, 2400);
+    }
+  }, [skipAnimation, state.isAudioEnabled]);
+
   return (
     <Container position={[width / 2, height / 2]}>
-      {/* Background particles */}
-      {particles.map((p, index) => (
-        <Sprite
-          key={`particle-${index}`}
-          texture={PIXI.Texture.WHITE}
-          x={p.x - width / 2}
-          y={p.y - height / 2}
-          width={20}
-          height={20}
-          anchor={0.5}
-          scale={p.scale}
-          rotation={p.rotation}
-          alpha={p.alpha * 0.3}
-          tint={0xffd700} // Gold color
-        />
-      ))}
-
-      {/* Level icon with animation */}
+      {/* Simple background */}
+      <Graphics
+        draw={(g) => {
+          g.clear();
+          g.beginFill(getBgColor(), 0.7);
+          g.drawRoundedRect(-width / 2, -height / 2, width, height, 20);
+          g.endFill();
+          
+          // Simple border
+          const borderColor = readyText === 'Go!' ? 0x4caf50 : 
+                            readyText === 'Set...' ? 0xff9800 : 
+                            0x2196f3;
+          
+          g.lineStyle(5, borderColor, 0.4);
+          g.drawRoundedRect(-width / 2 + 20, -height / 2 + 20, width - 40, height - 40, 40);
+        }}
+      />
+      
+      {/* Text elements */}
+      <Text
+        text={`Level ${levelNumber}`} 
+        anchor={0.5}
+        y={-50}
+        style={
+          new PIXI.TextStyle({
+            fill: 0x0066cc,
+            fontSize: 36,
+            fontFamily: 'ABeeZee, Arial, sans-serif',
+            fontWeight: 'bold',
+          })
+        }
+      />
+      
       <Text
         text={levelIcon}
         anchor={0.5}
         y={-120}
         style={
           new PIXI.TextStyle({
-            fontSize: iconSize,
-          })
-        }
-      />
-
-      {/* Level title with scale animation */}
-      <Text
-        text={`Level ${levelNumber}`}
-        anchor={0.5}
-        y={-50}
-        scale={titleScale}
-        style={
-          new PIXI.TextStyle({
-            fill: 0x333333,
-            fontSize: 42,
-            fontFamily: 'ABeeZee, Arial, sans-serif',
-            fontWeight: 'bold',
-            dropShadow: true,
-            dropShadowAlpha: 0.4,
-            dropShadowDistance: 3,
+            fontSize: 60,
           })
         }
       />
@@ -237,19 +271,19 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
         text={readyText}
         anchor={0.5}
         y={50}
-        scale={readyScale}
         style={
           new PIXI.TextStyle({
             fill: getReadyTextColor(),
-            fontSize: 48,
+            fontSize: 52,
             fontFamily: 'ABeeZee, Arial, sans-serif',
             fontWeight: 'bold',
             dropShadow: true,
-            dropShadowAlpha: 0.3,
-            dropShadowDistance: 2,
+            dropShadowAlpha: 0.4,
+            dropShadowDistance: 3,
           })
         }
       />
+
     </Container>
   );
 };
