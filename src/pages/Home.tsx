@@ -78,12 +78,13 @@ const Home: React.FC = () => {
       return () => {
         document.removeEventListener('click', enableMusicOnDocumentClick);
         document.removeEventListener('visibilitychange', handleVisibilityChange);
-        audioService.pauseBackgroundMusic();
+        // Use the more thorough clear method to ensure music won't restart when navigating away from home
+        audioService.clearBackgroundMusic();
       };
     } else {
-      // Clean up - pause music when navigating away
+      // Clean up - stop music when navigating away
       return () => {
-        audioService.pauseBackgroundMusic();
+        audioService.clearBackgroundMusic();
       };
     }
   }, [state.isAudioEnabled, musicPlaying]);
@@ -109,12 +110,16 @@ const Home: React.FC = () => {
     // Also clear session storage skipLevelSelection flag to ensure it doesn't persist
     sessionStorage.removeItem('skipLevelSelection');
     
-    tryEnableMusicOnInteraction();
+    // Clear background music when navigating away
+    audioService.clearBackgroundMusic();
+    setMusicPlaying(false);
     navigate('/game');
   };
 
   const handleParentArea = () => {
-    tryEnableMusicOnInteraction();
+    // Clear background music when navigating away
+    audioService.clearBackgroundMusic();
+    setMusicPlaying(false);
     navigate('/parent');
   };
 

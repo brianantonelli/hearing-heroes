@@ -132,9 +132,6 @@ export const useGameState = (): GameStateData => {
           retries: 0,
           successfulRetries: 0,
         });
-
-        // Verify the session is active for debugging
-        const verifySession = metricsService.getCurrentSession();
       } catch (error) {
         console.error('Error loading word pairs:', error);
       }
@@ -154,10 +151,11 @@ export const useGameState = (): GameStateData => {
   useEffect(() => {
     // Start the game when we're on the intro screen with word pairs loaded
     if (wordPairs.length > 0 && gameStatus === 'intro') {
-      // Show intro for a moment before starting
+      // Show intro for a longer moment before starting
+      // This gives more time for the "Ready, Set, Go" animation to complete
       const timer = setTimeout(() => {
         setGameStatus('prompt');
-      }, 2000);
+      }, 3000);
 
       return () => clearTimeout(timer);
     }
@@ -238,7 +236,9 @@ export const useGameState = (): GameStateData => {
 
         // Play the audio prompt
         if (state.isAudioEnabled) {
-          audioService.playWordPrompt(promptAudio);
+          setTimeout(() => {
+            audioService.playWordPrompt(promptAudio);
+          }, 1000);
         }
 
         // Record the start time for response time measurement

@@ -252,11 +252,10 @@ export class AudioService {
       if (document.visibilityState === 'hidden') {
         // Page is hidden (minimized, tab switched, or screen locked)
         this.pauseBackgroundMusic();
-      } else if (document.visibilityState === 'visible' && !this.isMuted) {
-        // Only auto-resume if not muted - this will still respect autoplay restrictions
-        // so music may not resume on iOS until next user interaction
-        this.playBackgroundMusic();
       }
+      // We don't auto-resume music when becoming visible again
+      // This must be handled by the Home screen component only
+      // This prevents music from playing on non-Home screens when focus returns
     });
 
     // iOS specific events
@@ -355,6 +354,19 @@ export class AudioService {
     if (this.backgroundMusic) {
       this.backgroundMusic.pause();
     }
+  }
+
+  /**
+   * Stop and clear background music - use when navigating away from home
+   * This is more thorough than just pausing, as it ensures music won't play
+   * when visibility changes
+   */
+  clearBackgroundMusic(): void {
+    // First pause any playing music
+    this.pauseBackgroundMusic();
+    
+    // Clear reference to prevent auto-resuming
+    this.backgroundMusic = null;
   }
 
   /**

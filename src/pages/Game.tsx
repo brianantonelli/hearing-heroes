@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import { audioService } from '../services/audioService';
 import GameContainer from '../components/game/GameContainer';
 
 const Game: React.FC = () => {
@@ -11,6 +12,9 @@ const Game: React.FC = () => {
 
   // This is just a placeholder until we implement the actual game
   useEffect(() => {
+    // Ensure no music is playing when entering the game page
+    audioService.clearBackgroundMusic();
+    
     // Simulate loading game assets
     const timer = setTimeout(() => {
       setIsLoading(false);

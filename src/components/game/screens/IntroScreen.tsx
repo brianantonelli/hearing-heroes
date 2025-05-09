@@ -249,7 +249,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
       <Text
         text={`Level ${levelNumber}`}
         anchor={0.5}
-        y={-50}
+        y={-35}
         style={
           new PIXI.TextStyle({
             fill: 0x0066cc,
@@ -263,7 +263,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
       <Text
         text={levelIcon}
         anchor={0.5}
-        y={-120}
+        y={-100}
         style={
           new PIXI.TextStyle({
             fontSize: 60,

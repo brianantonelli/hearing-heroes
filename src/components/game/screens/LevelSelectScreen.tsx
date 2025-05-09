@@ -321,7 +321,7 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
 
       {/* Super kid-friendly title with fun elements */}
       {state.enableAnimations && (
-        <Container position={[centerX, 60]}>
+        <Container position={[centerX, 40]}>
           {/* Cartoon-like decorations */}
           <Text
             text="🌈"
