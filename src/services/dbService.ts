@@ -74,9 +74,14 @@ export class DBService {
    * Save a practice result
    */
   async savePracticeResult(result: PracticeResult): Promise<string> {
-    const db = await this.db;
-    await db.put(PRACTICE_RESULTS_STORE, result);
-    return result.id;
+    try {
+      const db = await this.db;
+      await db.put(PRACTICE_RESULTS_STORE, result);
+      return result.id;
+    } catch (error) {
+      console.error('DB service: Error saving practice result:', error);
+      throw error;
+    }
   }
 
   /**
@@ -165,8 +170,32 @@ export class DBService {
    * Get all practice sessions
    */
   async getAllPracticeSessions(): Promise<PracticeSession[]> {
-    const db = await this.db;
-    return db.getAll(PRACTICE_SESSIONS_STORE);
+    try {
+      const db = await this.db;
+      const sessions = await db.getAll(PRACTICE_SESSIONS_STORE);
+
+      // Log sessions that might be problematic (missing fields or invalid data)
+      const invalidSessions = sessions.filter(
+        s => !s.id || s.startTime === undefined || !Number.isFinite(s.totalPractices)
+      );
+
+      if (invalidSessions.length > 0) {
+        console.warn('DBService: Found potentially invalid sessions:', invalidSessions);
+      }
+
+      // Check for zombie sessions (sessions without end time that are old)
+      const sixHoursAgo = Date.now() - 6 * 60 * 60 * 1000;
+      const zombieSessions = sessions.filter(s => s.endTime === null && s.startTime < sixHoursAgo);
+
+      if (zombieSessions.length > 0) {
+        console.warn('DBService: Found zombie sessions (old but not ended):', zombieSessions);
+      }
+
+      return sessions;
+    } catch (error) {
+      console.error('DBService: Error retrieving practice sessions:', error);
+      return [];
+    }
   }
 
   /**

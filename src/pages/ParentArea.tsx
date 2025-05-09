@@ -19,26 +19,30 @@ import WordsByTypeScreen from '../components/dashboard/WordsByTypeScreen';
 const ParentAuth: React.FC<{ onAuthenticate: () => void }> = ({ onAuthenticate }) => {
   const [answer, setAnswer] = useState('');
   const [error, setError] = useState(false);
-  const [problem, setProblem] = useState<{ num1: number; num2: number; result: number }>({ num1: 0, num2: 0, result: 0 });
-  
+  const [problem, setProblem] = useState<{ num1: number; num2: number; result: number }>({
+    num1: 0,
+    num2: 0,
+    result: 0,
+  });
+
   // Generate a new random multiplication problem
   useEffect(() => {
     generateProblem();
   }, []);
-  
+
   const generateProblem = () => {
     // Generate numbers between 2-12 for multiplication problems
     // that are appropriate for a parent but not too difficult
     const num1 = Math.floor(Math.random() * 10) + 2; // 2-11
-    const num2 = Math.floor(Math.random() * 10) + 2; // 2-11
+    const num2 = Math.floor(Math.random() * 5) + 2; // 2-6
     const result = num1 * num2;
-    
+
     setProblem({ num1, num2, result });
   };
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Check if answer is correct
     if (parseInt(answer) === problem.result) {
       onAuthenticate();
@@ -49,7 +53,7 @@ const ParentAuth: React.FC<{ onAuthenticate: () => void }> = ({ onAuthenticate }
       generateProblem();
     }
   };
-  
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
@@ -57,16 +61,16 @@ const ParentAuth: React.FC<{ onAuthenticate: () => void }> = ({ onAuthenticate }
         <p className="mb-6 text-center">
           To access the parent dashboard, please answer this question:
         </p>
-        
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="text-xl text-center font-bold">
             What is {problem.num1} × {problem.num2}?
           </div>
-          
+
           <input
             type="number"
             value={answer}
-            onChange={(e) => {
+            onChange={e => {
               setAnswer(e.target.value);
               setError(false);
             }}
@@ -74,11 +78,9 @@ const ParentAuth: React.FC<{ onAuthenticate: () => void }> = ({ onAuthenticate }
             placeholder="Enter answer"
             autoFocus
           />
-          
-          {error && (
-            <p className="text-red-500 text-center">Incorrect answer. Please try again.</p>
-          )}
-          
+
+          {error && <p className="text-red-500 text-center">Incorrect answer. Please try again.</p>}
+
           <div className="flex gap-4 mt-2">
             <button
               type="button"
@@ -118,18 +120,32 @@ const Dashboard: React.FC = () => {
     async function loadDashboardData() {
       try {
         setLoading(true);
+        // Debug: Check what's actually in the database
+        const db = await metricsService.getAllSessions();
 
-        // Load sessions and overall statistics
-        const [recentSessions, statistics] = await Promise.all([
-          metricsService.getRecentSessions(10),
-          metricsService.getOverallStatistics()
-        ]);
+        // Try loading the sessions one at a time to identify any issues
+        let recentSessions;
+        let statistics;
+
+        try {
+          recentSessions = await metricsService.getRecentSessions(10);
+        } catch (sessionErr) {
+          console.error('ParentArea: Failed to load recent sessions:', sessionErr);
+          recentSessions = [];
+        }
+
+        try {
+          statistics = await metricsService.getOverallStatistics();
+        } catch (statsErr) {
+          console.error('ParentArea: Failed to calculate statistics:', statsErr);
+          statistics = null;
+        }
 
         setSessions(recentSessions);
         setOverallStats(statistics);
         setLoading(false);
       } catch (err) {
-        console.error('Error loading dashboard data:', err);
+        console.error('ParentArea: Error loading dashboard data:', err);
         setError('Failed to load dashboard data');
         setLoading(false);
       }
@@ -153,11 +169,7 @@ const Dashboard: React.FC = () => {
     }
 
     if (error && currentView !== 'preferences') {
-      return (
-        <div className="p-4 bg-red-100 text-red-700 rounded-md">
-          {error}
-        </div>
-      );
+      return <div className="p-4 bg-red-100 text-red-700 rounded-md">{error}</div>;
     }
 
     switch (currentView) {
@@ -166,9 +178,7 @@ const Dashboard: React.FC = () => {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold">Progress Summary</h2>
-              {overallStats && (
-                <ExportButton isOverallStats={true} />
-              )}
+              {overallStats && <ExportButton isOverallStats={true} />}
             </div>
 
             {overallStats ? (
@@ -180,8 +190,19 @@ const Dashboard: React.FC = () => {
                     className="text-blue-600 hover:text-blue-800 underline flex items-center"
                   >
                     <span>View detailed word analysis</span>
-                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    <svg
+                      className="w-4 h-4 ml-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -203,8 +224,8 @@ const Dashboard: React.FC = () => {
                 </button>
               </div>
 
-              <SessionHistoryTable 
-                sessions={sessions.slice(0, 5)} 
+              <SessionHistoryTable
+                sessions={sessions.slice(0, 5)}
                 onSessionSelect={handleSessionSelect}
               />
             </div>
@@ -224,22 +245,16 @@ const Dashboard: React.FC = () => {
               </button>
             </div>
 
-            <SessionHistoryTable 
-              sessions={sessions} 
-              onSessionSelect={handleSessionSelect}
-            />
+            <SessionHistoryTable sessions={sessions} onSessionSelect={handleSessionSelect} />
           </div>
         );
 
       case 'sessionDetails':
         if (!selectedSessionId) return null;
         return (
-          <SessionDetails 
-            sessionId={selectedSessionId}
-            onBack={() => setCurrentView('sessions')}
-          />
+          <SessionDetails sessionId={selectedSessionId} onBack={() => setCurrentView('sessions')} />
         );
-        
+
       case 'preferences':
         return <PreferencesScreen />;
 
@@ -247,27 +262,30 @@ const Dashboard: React.FC = () => {
         return <WordsByTypeScreen />;
     }
   };
-  
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="bg-primary text-white p-4 flex justify-between items-center sticky top-0 z-10">
         <h1 className="text-xl font-bold">Parent Dashboard</h1>
-        <button 
+        <button
           onClick={() => navigate('/')}
           className="py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           Exit
         </button>
       </header>
-      
-      <div className="flex-1 p-6 bg-gray-100 overflow-y-auto" style={{ height: 'calc(100vh - 70px)' }}>
+
+      <div
+        className="flex-1 p-6 bg-gray-100 overflow-y-auto"
+        style={{ height: 'calc(100vh - 70px)' }}
+      >
         <div className="max-w-6xl mx-auto pb-12">
           <nav className="mb-6 sticky top-0 bg-gray-100 z-5 pt-2 pb-1">
             <ul className="flex border-b">
               <li className="mr-1">
-                <button 
+                <button
                   className={`inline-block py-2 px-4 ${
-                    currentView === 'overview' 
+                    currentView === 'overview'
                       ? 'border-b-2 border-blue-500 text-blue-600 font-medium'
                       : 'text-gray-600 hover:text-blue-600'
                   }`}
@@ -279,7 +297,7 @@ const Dashboard: React.FC = () => {
                 </button>
               </li>
               <li className="mr-1">
-                <button 
+                <button
                   className={`inline-block py-2 px-4 ${
                     currentView === 'sessions' || currentView === 'sessionDetails'
                       ? 'border-b-2 border-blue-500 text-blue-600 font-medium'
@@ -293,9 +311,9 @@ const Dashboard: React.FC = () => {
                 </button>
               </li>
               <li className="mr-1">
-                <button 
+                <button
                   className={`inline-block py-2 px-4 ${
-                    currentView === 'wordsByType' 
+                    currentView === 'wordsByType'
                       ? 'border-b-2 border-blue-500 text-blue-600 font-medium'
                       : 'text-gray-600 hover:text-blue-600'
                   }`}
@@ -307,9 +325,9 @@ const Dashboard: React.FC = () => {
                 </button>
               </li>
               <li className="mr-1">
-                <button 
+                <button
                   className={`inline-block py-2 px-4 ${
-                    currentView === 'preferences' 
+                    currentView === 'preferences'
                       ? 'border-b-2 border-blue-500 text-blue-600 font-medium'
                       : 'text-gray-600 hover:text-blue-600'
                   }`}
@@ -332,13 +350,12 @@ const Dashboard: React.FC = () => {
 
 // Parent Area main component
 const ParentArea: React.FC = () => {
-  const { state } = useAppContext();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
+
   if (!isAuthenticated) {
     return <ParentAuth onAuthenticate={() => setIsAuthenticated(true)} />;
   }
-  
+
   return <Dashboard />;
 };
 

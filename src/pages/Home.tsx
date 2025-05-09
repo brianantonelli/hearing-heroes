@@ -103,6 +103,12 @@ const Home: React.FC = () => {
   };
 
   const handleStartGame = () => {
+    // Reset level selection shown status so it reappears when returning to the game
+    dispatch({ type: 'SET_LEVEL_SELECTION_SHOWN', payload: false });
+    
+    // Also clear session storage skipLevelSelection flag to ensure it doesn't persist
+    sessionStorage.removeItem('skipLevelSelection');
+    
     tryEnableMusicOnInteraction();
     navigate('/game');
   };

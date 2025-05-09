@@ -59,11 +59,8 @@ const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
         // Set random emoji for fail feedback
         const emojis = FEEDBACK_EMOJIS.fail;
         setFeedbackEmoji(emojis[Math.floor(Math.random() * emojis.length)]);
-
-        console.log(`Feedback displayed: ${text} (fail)`);
       } catch (error) {
         console.error('Error loading feedback:', error);
-        // Fallback values
         setFeedbackText('Try again!');
         setFeedbackEmoji('🤔');
       }
@@ -95,7 +92,7 @@ const FeedbackMessage: React.FC<FeedbackMessageProps> = ({
       <Text
         text={feedbackText}
         anchor={0.5}
-        y={60}
+        y={90}
         style={
           new PIXI.TextStyle({
             fill: color,

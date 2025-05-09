@@ -31,7 +31,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
   // Animation states
   const [titleScale, setTitleScale] = useState(0);
   const [readyScale, setReadyScale] = useState(0);
-  const [readyText, setReadyText] = useState('Get ready...');
+  const [readyText, setReadyText] = useState('Ready...');
   const [particles, setParticles] = useState<Particle[]>([]);
   const [iconSize, setIconSize] = useState(0);
   const [animTime, setAnimTime] = useState(0);
@@ -81,13 +81,13 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
             console.error('Error playing audio:', err);
           }
         }, 200);
-        
+
         return () => clearTimeout(audioTimer);
       }
     } catch (err) {
       console.error('Error in audio setup:', err);
     }
-    
+
     if (skipAnimation) {
       setTitleScale(1);
       setReadyScale(1);
@@ -136,8 +136,8 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
     const texts = ['Ready...', 'Set...', 'Go!'];
 
     // Change text with timing matching the audio
-    const textTimer1 = setTimeout(() => setReadyText(texts[1]), 800);
-    const textTimer2 = setTimeout(() => setReadyText(texts[2]), 1600);
+    const textTimer1 = setTimeout(() => setReadyText(texts[1]), 400);
+    const textTimer2 = setTimeout(() => setReadyText(texts[2]), 600);
 
     return () => {
       clearInterval(titleAnimInterval);
@@ -158,7 +158,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
     const animate = () => {
       // Update animation time for all components
       setAnimTime(Date.now());
-      
+
       // Update particles
       particlesRef.current = particlesRef.current.map(p => ({
         ...p,
@@ -210,13 +210,19 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
     ];
     return colors[(levelNumber - 1) % colors.length];
   };
-  
+
   // Skip to ready text for debugging
   useEffect(() => {
     if (!skipAnimation && state.isAudioEnabled) {
-      setTimeout(() => { setReadyText('Ready...'); }, 800);
-      setTimeout(() => { setReadyText('Set...'); }, 1600);
-      setTimeout(() => { setReadyText('Go!'); }, 2400);
+      setTimeout(() => {
+        setReadyText('Ready...');
+      }, 200);
+      setTimeout(() => {
+        setReadyText('Set...');
+      }, 800);
+      setTimeout(() => {
+        setReadyText('Go!');
+      }, 1300);
     }
   }, [skipAnimation, state.isAudioEnabled]);
 
@@ -224,25 +230,24 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
     <Container position={[width / 2, height / 2]}>
       {/* Simple background */}
       <Graphics
-        draw={(g) => {
+        draw={g => {
           g.clear();
           g.beginFill(getBgColor(), 0.7);
           g.drawRoundedRect(-width / 2, -height / 2, width, height, 20);
           g.endFill();
-          
+
           // Simple border
-          const borderColor = readyText === 'Go!' ? 0x4caf50 : 
-                            readyText === 'Set...' ? 0xff9800 : 
-                            0x2196f3;
-          
+          const borderColor =
+            readyText === 'Go!' ? 0x4caf50 : readyText === 'Set...' ? 0xff9800 : 0x2196f3;
+
           g.lineStyle(5, borderColor, 0.4);
           g.drawRoundedRect(-width / 2 + 20, -height / 2 + 20, width - 40, height - 40, 40);
         }}
       />
-      
+
       {/* Text elements */}
       <Text
-        text={`Level ${levelNumber}`} 
+        text={`Level ${levelNumber}`}
         anchor={0.5}
         y={-50}
         style={
@@ -254,7 +259,7 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
           })
         }
       />
-      
+
       <Text
         text={levelIcon}
         anchor={0.5}
@@ -283,7 +288,6 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ levelNumber, width, height })
           })
         }
       />
-
     </Container>
   );
 };

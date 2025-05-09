@@ -66,9 +66,38 @@ export const useGameState = (): GameStateData => {
 
   // Load word pairs for the current level
   useEffect(() => {
+    // Add a flag to track if this effect is still "current"
+    let isMounted = true;
+
     const loadPairs = async () => {
+      console.log('Loading word pairs for level:', state.currentLevel);
+
       try {
+        // End any existing session, but don't use sessionId from state to prevent a loop
+        const currentSession = metricsService.getCurrentSession();
+        if (currentSession) {
+          await metricsService.endSession().catch(e => {
+            console.warn('Error ending previous session:', e);
+          });
+        }
+
+        // Only continue if component is still mounted
+        if (!isMounted) return;
+
+        // Start a new metrics session
+        const newSessionId = await startNewSession(state.currentLevel);
+
+        // Only continue if component is still mounted
+        if (!isMounted) return;
+
+        setSessionId(newSessionId);
+
+        // Fetch word pairs for this level
         const pairs = await getWordPairsByLevel(state.currentLevel);
+
+        // Only continue if component is still mounted
+        if (!isMounted) return;
+
         if (pairs.length === 0) {
           console.error(`No word pairs found for level ${state.currentLevel}`);
           return;
@@ -77,10 +106,6 @@ export const useGameState = (): GameStateData => {
         // Shuffle the pairs for randomization
         const shuffledPairs = [...pairs].sort(() => Math.random() - 0.5);
         setWordPairs(shuffledPairs);
-
-        // Start a new metrics session
-        const newSessionId = await startNewSession(state.currentLevel);
-        setSessionId(newSessionId);
 
         // Preload audio for all word pairs
         const audioPaths = shuffledPairs.flatMap(pair => [
@@ -107,6 +132,9 @@ export const useGameState = (): GameStateData => {
           retries: 0,
           successfulRetries: 0,
         });
+
+        // Verify the session is active for debugging
+        const verifySession = metricsService.getCurrentSession();
       } catch (error) {
         console.error('Error loading word pairs:', error);
       }
@@ -116,11 +144,11 @@ export const useGameState = (): GameStateData => {
 
     // Clean up session on unmount
     return () => {
-      if (sessionId) {
-        metricsService.endSession().catch(console.error);
-      }
+      isMounted = false;
+      // Note: We don't end the session here since it might cause the loop
+      // We'll rely on the level change effect to handle that
     };
-  }, [state.currentLevel]);
+  }, [state.currentLevel]); // Remove sessionId from dependencies to break the loop
 
   // Start game when word pairs are loaded
   useEffect(() => {
@@ -134,55 +162,93 @@ export const useGameState = (): GameStateData => {
       return () => clearTimeout(timer);
     }
   }, [wordPairs, gameStatus]);
-  
+
   // Reset game state if the level changes
   useEffect(() => {
     // Stop any ongoing audio
     audioService.stopAll();
-    
+
     // Reset state immediately when level changes
     if (sessionId) {
-      // End the previous session if there was one
-      metricsService.endSession().catch(console.error);
+      // We don't wait for this to complete since the main loading effect will
+      // also check for and end any existing sessions
+      metricsService
+        .endSession()
+        .then(() => {
+          console.log('Session ended successfully during level change');
+        })
+        .catch(error => {
+          console.error('Error ending session during level change:', error);
+        });
+
+      // We don't clear sessionId here, as the main effect will handle that
+      // This approach avoids issues with state updates in effects
     }
-    
-    // The main useEffect for loading word pairs will handle the rest
-  }, [state.currentLevel, sessionId]);
+
+    // The main useEffect for loading word pairs will handle the rest, including
+    // starting a new session for the new level
+  }, [state.currentLevel]);
 
   // Start new session
   const startNewSession = async (level: number): Promise<string> => {
     try {
+      // First check if there's already an active session
+      const currentSession = metricsService.getCurrentSession();
+      if (currentSession) {
+        await metricsService.endSession();
+      }
+
       const result = await metricsService.startSession(level);
+
+      // Verify the session is now active
+      const newSession = metricsService.getCurrentSession();
+      if (!newSession) {
+        console.error('Session creation failed - currentSession is still null after startSession');
+      }
+
       return result;
     } catch (error) {
       console.error('Error starting session:', error);
-      return '';
+
+      // Try emergency restoration if start failed
+      try {
+        console.log('Attempting emergency session restoration');
+        return await metricsService.restoreSession(level);
+      } catch (restoreError) {
+        console.error('Emergency restoration also failed:', restoreError);
+        return '';
+      }
     }
   };
 
   // Play prompt when ready
   useEffect(() => {
     if (gameStatus === 'prompt' && wordPairs.length > 0) {
-      const pair = wordPairs[currentPairIndex];
-      currentPairRef.current = pair;
+      try {
+        const pair = wordPairs[currentPairIndex];
+        // Store the current pair in the ref for metric recording
+        currentPairRef.current = pair;
 
-      // Randomly select which word to prompt
-      const isFirstWord = Math.random() > 0.5;
-      const promptWord = isFirstWord ? pair.word1 : pair.word2;
-      const promptAudio = isFirstWord ? pair.audioPrompt1 : pair.audioPrompt2;
+        // Randomly select which word to prompt
+        const isFirstWord = Math.random() > 0.5;
+        const promptWord = isFirstWord ? pair.word1 : pair.word2;
+        const promptAudio = isFirstWord ? pair.audioPrompt1 : pair.audioPrompt2;
 
-      setCurrentPromptWord(promptWord);
+        setCurrentPromptWord(promptWord);
 
-      // Play the audio prompt
-      if (state.isAudioEnabled) {
-        audioService.playWordPrompt(promptAudio);
+        // Play the audio prompt
+        if (state.isAudioEnabled) {
+          audioService.playWordPrompt(promptAudio);
+        }
+
+        // Record the start time for response time measurement
+        startTimeRef.current = Date.now();
+
+        // Move to selection state
+        setGameStatus('selection');
+      } catch (error) {
+        console.error('Error setting up prompt:', error);
       }
-
-      // Record the start time for response time measurement
-      startTimeRef.current = Date.now();
-
-      // Move to selection state
-      setGameStatus('selection');
     }
   }, [gameStatus, wordPairs, currentPairIndex, state.isAudioEnabled]);
 
@@ -201,7 +267,15 @@ export const useGameState = (): GameStateData => {
   // Handle word selection
   const handleWordSelection = useCallback(
     async (word: string) => {
-      if (gameStatus !== 'selection' || !currentPromptWord || !currentPair) return;
+      if (gameStatus !== 'selection' || !currentPromptWord) return;
+
+      // Use currentPairRef.current as a safe reference that persists between renders
+      const pairToUse = currentPairRef.current;
+
+      if (!pairToUse) {
+        console.error('No current pair available in ref');
+        return;
+      }
 
       const responseTime = Date.now() - (startTimeRef.current || Date.now());
       const correct = word === currentPromptWord;
@@ -224,18 +298,40 @@ export const useGameState = (): GameStateData => {
       // in the FeedbackMessage component, which calls speechService.playRandomFeedback
       // This ensures the text and audio are properly synchronized
 
-      // Record the practice result
-      if (sessionId) {
+      // First check if there's an active session before trying to record metrics
+      const activeSession = metricsService.getCurrentSession();
+      if (!activeSession && sessionId) {
+        console.warn(
+          'Session appears inactive despite having sessionId. Attempting to restart session.'
+        );
+        // Try to restart a session if needed
         try {
-          await metricsService.recordPractice({
-            wordPair: currentPair,
-            selectedWord: word,
-            targetWord: currentPromptWord,
-            responseTimeMs: responseTime,
-          });
-        } catch (error) {
-          console.error('Error recording practice result:', error);
+          await startNewSession(state.currentLevel);
+        } catch (e) {
+          console.error('Failed emergency session restart:', e);
         }
+      }
+
+      // Record the practice result
+      try {
+        // Use the ref version for stability
+        await metricsService.recordPractice({
+          wordPair: pairToUse,
+          selectedWord: word,
+          targetWord: currentPromptWord,
+          responseTimeMs: responseTime,
+        });
+      } catch (error) {
+        console.error('Error recording practice result:', error);
+        console.error('Error details:', {
+          pairToUse,
+          word,
+          currentPromptWord,
+          responseTime,
+          sessionId,
+          error,
+          hasActiveSession: !!metricsService.getCurrentSession(),
+        });
       }
 
       // Move to next pair after a delay to allow feedback to be shown
@@ -245,20 +341,20 @@ export const useGameState = (): GameStateData => {
           // Before setting game to complete, make sure to reset the feedback states
           setSelectedWord(null);
           setIsCorrect(null);
-          
+
           // End of game - with a slight additional delay to ensure celebration is completed
           setTimeout(() => {
             // End the session
             if (sessionId) {
               metricsService.endSession().catch(console.error);
             }
-            
+
             // Level complete sound will be played by the CompleteScreen
             // instead of here to make sure audio and text are synchronized
-            
+
             // Now set the game status to complete
             setGameStatus('complete');
-          }, 200);  // Short delay to ensure any animations are finished
+          }, 200); // Short delay to ensure any animations are finished
         } else {
           // Move to next pair
           setCurrentPairIndex(prev => prev + 1);

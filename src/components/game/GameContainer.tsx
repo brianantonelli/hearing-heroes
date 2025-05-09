@@ -157,7 +157,6 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     try {
       // Set this to false to ensure the celebration animation is removed
       setShowCelebration(false);
-      console.log('Celebration animation complete');
     } catch (error) {
       console.error('Error in handleCelebrationComplete:', error);
     }
@@ -309,9 +308,9 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
       {state.enableAnimations && gameStatus !== 'complete' && !showLevelSelect && (
         <BackgroundBubbles width={width} height={height} />
       )}
-      
+
       {renderGameContent()}
-      
+
       {shouldShowCelebration && gameStatus !== 'complete' && (
         <CelebrationAnimation
           width={width}
