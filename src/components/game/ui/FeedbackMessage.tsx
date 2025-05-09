@@ -14,7 +14,7 @@ interface FeedbackMessageProps {
 // Emoji mapping for feedback types
 const FEEDBACK_EMOJIS = {
   pass: ['🎉', '⭐', '🌟', '👍', '🥳', '🦄', '🏆', '🎯'],
-  fail: ['🤔', '💪', '🔍', '🎯', '✨', '🧩', '🏆', '🚀']
+  fail: ['🤔', '💪', '🔍', '🎯', '✨', '🧩', '✌️', '👂'],
 };
 
 /**

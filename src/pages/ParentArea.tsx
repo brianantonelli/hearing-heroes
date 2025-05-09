@@ -33,7 +33,7 @@ const ParentAuth: React.FC<{ onAuthenticate: () => void }> = ({ onAuthenticate }
   const generateProblem = () => {
     // Generate numbers between 2-12 for multiplication problems
     // that are appropriate for a parent but not too difficult
-    const num1 = Math.floor(Math.random() * 10) + 2; // 2-11
+    const num1 = Math.floor(Math.random() * 5) + 2; // 2-6
     const num2 = Math.floor(Math.random() * 5) + 2; // 2-6
     const result = num1 * num2;
 

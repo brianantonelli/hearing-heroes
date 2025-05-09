@@ -234,18 +234,25 @@ export const useGameState = (): GameStateData => {
 
         setCurrentPromptWord(promptWord);
 
-        // Play the audio prompt
+        // Play the audio prompt after a short delay
         if (state.isAudioEnabled) {
           setTimeout(() => {
             audioService.playWordPrompt(promptAudio);
           }, 1000);
         }
 
-        // Record the start time for response time measurement
-        startTimeRef.current = Date.now();
-
-        // Move to selection state
+        // Move to selection state but with a delay in recording start time
+        // This gives audio time to play
         setGameStatus('selection');
+        
+        // Delay setting the start time to account for audio playing
+        // This effectively prevents scoring very fast taps that happen before audio completes
+        setTimeout(() => {
+          // Record the start time for response time measurement
+          // Adding a slight delay prevents accidental immediate taps
+          startTimeRef.current = Date.now();
+        }, 2000); // 2 second delay before counting response time
+        
       } catch (error) {
         console.error('Error setting up prompt:', error);
       }
