@@ -26,23 +26,25 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
   const [titleHue, setTitleHue] = useState(0);
   const [titleBounce, setTitleBounce] = useState(0);
   const [titleScale, setTitleScale] = useState(1);
-  
+
   // Animated background elements
-  const [bubbles, setBubbles] = useState<Array<{
-    x: number;
-    y: number;
-    radius: number;
-    color: number;
-    speed: number;
-    phase: number;
-  }>>([]);
+  const [bubbles, setBubbles] = useState<
+    Array<{
+      x: number;
+      y: number;
+      radius: number;
+      color: number;
+      speed: number;
+      phase: number;
+    }>
+  >([]);
 
   // Stop any playing audio when the level select screen appears
   useEffect(() => {
     // This ensures we don't hear audio from previous screens when level selection appears
     audioService.stopAll();
   }, []);
-  
+
   // Initialize bubbles for the background
   useEffect(() => {
     if (state.enableAnimations) {
@@ -81,17 +83,19 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
 
     // Bubble movement animation
     const bubbleTimer = setInterval(() => {
-      setBubbles(prev => 
+      setBubbles(prev =>
         prev.map(bubble => ({
           ...bubble,
           y: bubble.y - bubble.speed,
           x: bubble.x + Math.sin(bubble.phase + Date.now() / 2000) * 0.5,
           // Reset bubble position when it goes off screen
-          ...(bubble.y < -bubble.radius ? {
-            x: Math.random() * width,
-            y: height + bubble.radius,
-            phase: Math.random() * Math.PI * 2,
-          } : {})
+          ...(bubble.y < -bubble.radius
+            ? {
+                x: Math.random() * width,
+                y: height + bubble.radius,
+                phase: Math.random() * Math.PI * 2,
+              }
+            : {}),
         }))
       );
     }, 30);
@@ -100,10 +104,10 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
     const titleAnimationTimer = setInterval(() => {
       // Update hue for rainbow effect (0-360)
       setTitleHue(prev => (prev + 2) % 360);
-      
+
       // Update bounce effect
       setTitleBounce(Math.sin(Date.now() / 300) * 5);
-      
+
       // Update scale for pulse effect
       setTitleScale(1 + Math.sin(Date.now() / 600) * 0.05);
     }, 30);
@@ -143,7 +147,7 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
   const handleSelectLevel = (level: number) => {
     // First, set the current level
     onLevelSelect(level);
-    
+
     // We'll call this directly to avoid the weird auto-start issue
     // The parent component will handle the rest
   };
@@ -214,33 +218,29 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
   const verticalOffset = 20;
 
   // Draw bubbles for the animated background
-  const drawBubble = React.useCallback(
-    (g: PIXI.Graphics, bubble: typeof bubbles[0]) => {
-      g.clear();
-      
-      // Draw a gradient-like bubble with alpha
-      g.beginFill(bubble.color, 0.4);
-      g.drawCircle(bubble.x, bubble.y, bubble.radius);
-      g.endFill();
+  const drawBubble = React.useCallback((g: PIXI.Graphics, bubble: (typeof bubbles)[0]) => {
+    g.clear();
 
-      // Highlight on top
-      g.beginFill(0xFFFFFF, 0.3);
-      g.drawCircle(
-        bubble.x - bubble.radius * 0.3, 
-        bubble.y - bubble.radius * 0.3, 
-        bubble.radius * 0.3
-      );
-      g.endFill();
-    },
-    []
-  );
+    // Draw a gradient-like bubble with alpha
+    g.beginFill(bubble.color, 0.4);
+    g.drawCircle(bubble.x, bubble.y, bubble.radius);
+    g.endFill();
+
+    // Highlight on top
+    g.beginFill(0xffffff, 0.3);
+    g.drawCircle(
+      bubble.x - bubble.radius * 0.3,
+      bubble.y - bubble.radius * 0.3,
+      bubble.radius * 0.3
+    );
+    g.endFill();
+  }, []);
 
   return (
     <Container>
       {/* Background with fun bubbles */}
-      {state.enableAnimations && bubbles.map((bubble, index) => (
-        <Graphics key={index} draw={(g) => drawBubble(g, bubble)} />
-      ))}
+      {state.enableAnimations &&
+        bubbles.map((bubble, index) => <Graphics key={index} draw={g => drawBubble(g, bubble)} />)}
 
       {/* Add some fun stars in the corners */}
       {state.enableAnimations && (
@@ -252,7 +252,10 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
             anchor={0.5}
             alpha={0.6}
             rotation={Date.now() / 3000}
-            scale={{ x: 1 + Math.sin(Date.now() / 1000) * 0.1, y: 1 + Math.sin(Date.now() / 1000) * 0.1 }}
+            scale={{
+              x: 1 + Math.sin(Date.now() / 1000) * 0.1,
+              y: 1 + Math.sin(Date.now() / 1000) * 0.1,
+            }}
             style={new PIXI.TextStyle({ fontSize: 30 })}
           />
           <Text
@@ -262,7 +265,10 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
             anchor={0.5}
             alpha={0.6}
             rotation={-Date.now() / 3500}
-            scale={{ x: 1 + Math.sin(Date.now() / 950) * 0.1, y: 1 + Math.sin(Date.now() / 950) * 0.1 }}
+            scale={{
+              x: 1 + Math.sin(Date.now() / 950) * 0.1,
+              y: 1 + Math.sin(Date.now() / 950) * 0.1,
+            }}
             style={new PIXI.TextStyle({ fontSize: 35 })}
           />
           <Text
@@ -272,7 +278,10 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
             anchor={0.5}
             alpha={0.6}
             rotation={Date.now() / 4000}
-            scale={{ x: 1 + Math.sin(Date.now() / 900) * 0.1, y: 1 + Math.sin(Date.now() / 900) * 0.1 }}
+            scale={{
+              x: 1 + Math.sin(Date.now() / 900) * 0.1,
+              y: 1 + Math.sin(Date.now() / 900) * 0.1,
+            }}
             style={new PIXI.TextStyle({ fontSize: 40 })}
           />
           <Text
@@ -282,7 +291,10 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
             anchor={0.5}
             alpha={0.6}
             rotation={-Date.now() / 3200}
-            scale={{ x: 1 + Math.sin(Date.now() / 1050) * 0.1, y: 1 + Math.sin(Date.now() / 1050) * 0.1 }}
+            scale={{
+              x: 1 + Math.sin(Date.now() / 1050) * 0.1,
+              y: 1 + Math.sin(Date.now() / 1050) * 0.1,
+            }}
             style={new PIXI.TextStyle({ fontSize: 30 })}
           />
         </>
@@ -301,51 +313,15 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
               fontSize: 28,
               fontFamily: 'ABeeZee, Arial, sans-serif',
               letterSpacing: 1,
-              fontWeight: 'bold'
+              fontWeight: 'bold',
             })
           }
         />
       )}
-      
+
       {/* Super kid-friendly title with fun elements */}
       {state.enableAnimations && (
-        <Container position={[centerX, 40]}>
-          {/* Fun cloud background */}
-          <Graphics
-            draw={(g) => {
-              g.clear();
-              
-              // Fun cloud-like shape with soft blue background
-              g.beginFill(0xCCE6FF, 0.5);
-              g.drawRoundedRect(-190, -30, 380, 60, 25);
-              
-              // Add bubbly edges to the cloud
-              const numBubbles = 10;
-              const edgeRadius = 15;
-              for (let i = 0; i < numBubbles; i++) {
-                const angle = (i / numBubbles) * Math.PI * 2;
-                const xOffset = Math.cos(angle) * 190;
-                const yOffset = Math.sin(angle) * 30;
-                g.drawCircle(xOffset, yOffset, edgeRadius + Math.sin(Date.now() / 1000 + i) * 2);
-              }
-              
-              g.endFill();
-              
-              // Add a colorful border
-              const borderColors = [
-                0xFF9999, // Light red
-                0xFFCC99, // Light orange
-                0xFFFF99, // Light yellow  
-                0x99FF99, // Light green
-                0x99FFFF, // Light cyan
-                0x9999FF  // Light blue
-              ];
-              
-              g.lineStyle(4, borderColors[Math.floor(Date.now() / 500) % borderColors.length], 0.7);
-              g.drawRoundedRect(-190, -30, 380, 60, 25);
-            }}
-          />
-          
+        <Container position={[centerX, 60]}>
           {/* Cartoon-like decorations */}
           <Text
             text="🌈"
@@ -355,7 +331,7 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
             scale={0.8}
             style={new PIXI.TextStyle({ fontSize: 30 })}
           />
-          
+
           <Text
             text="⭐"
             anchor={0.5}
@@ -365,35 +341,57 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
             scale={0.8}
             style={new PIXI.TextStyle({ fontSize: 30 })}
           />
-          
+
           {/* Individual animated letters */}
-          {"Pick a Level!".split('').map((letter, i) => {
+          {'Pick a Level!'.split('').map((letter, i) => {
             // Calculate individual letter position and effects
             const position = i * 22 - 100; // Centered positioning
             const letterHue = (titleHue + i * 15) % 360; // Staggered colors
             const letterY = letter === ' ' ? 0 : titleBounce * Math.sin(i * 0.7 + Date.now() / 300);
             const letterRotation = letter === ' ' ? 0 : Math.sin(Date.now() / 800 + i * 0.5) * 0.15;
-            
+
             // Convert HSL to hex color
             const h = letterHue / 360;
-            const s = 0.8;  // More saturated colors
+            const s = 0.8; // More saturated colors
             const l = 0.55; // Brighter colors
             const c = (1 - Math.abs(2 * l - 1)) * s;
-            const x = c * (1 - Math.abs((h * 6) % 2 - 1));
+            const x = c * (1 - Math.abs(((h * 6) % 2) - 1));
             const m = l - c / 2;
             let r, g, b;
-            if (h < 1/6) { r = c; g = x; b = 0; }
-            else if (h < 2/6) { r = x; g = c; b = 0; }
-            else if (h < 3/6) { r = 0; g = c; b = x; }
-            else if (h < 4/6) { r = 0; g = x; b = c; }
-            else if (h < 5/6) { r = x; g = 0; b = c; }
-            else { r = c; g = 0; b = x; }
-            
-            const color = Math.round((r + m) * 255) * 65536 + Math.round((g + m) * 255) * 256 + Math.round((b + m) * 255);
-            
+            if (h < 1 / 6) {
+              r = c;
+              g = x;
+              b = 0;
+            } else if (h < 2 / 6) {
+              r = x;
+              g = c;
+              b = 0;
+            } else if (h < 3 / 6) {
+              r = 0;
+              g = c;
+              b = x;
+            } else if (h < 4 / 6) {
+              r = 0;
+              g = x;
+              b = c;
+            } else if (h < 5 / 6) {
+              r = x;
+              g = 0;
+              b = c;
+            } else {
+              r = c;
+              g = 0;
+              b = x;
+            }
+
+            const color =
+              Math.round((r + m) * 255) * 65536 +
+              Math.round((g + m) * 255) * 256 +
+              Math.round((b + m) * 255);
+
             // For uppercase letters, make them extra fancy
             const isUpperCase = letter === letter.toUpperCase() && letter !== ' ';
-            
+
             return (
               <Text
                 key={i}
@@ -413,14 +411,14 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
                     dropShadowColor: 0x333333,
                     dropShadowDistance: 2,
                     dropShadowAlpha: 0.5,
-                    stroke: 0xFFFFFF,
+                    stroke: 0xffffff,
                     strokeThickness: 2,
                   })
                 }
               />
             );
           })}
-          
+
           {/* Add animated playful elements */}
           <Text
             text="🎮"
@@ -430,7 +428,7 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
             anchor={0.5}
             style={new PIXI.TextStyle({ fontSize: 24 })}
           />
-          
+
           <Text
             text="🎯"
             x={135 - Math.sin(Date.now() / 1200) * 10}
@@ -438,28 +436,6 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
             scale={0.75}
             anchor={0.5}
             style={new PIXI.TextStyle({ fontSize: 24 })}
-          />
-          
-          {/* Dashed underline */}
-          <Graphics
-            draw={(g) => {
-              g.clear();
-              g.lineStyle(4, 0xFFFFFF, 0.7);
-              
-              // Draw dashed line
-              const dashLength = 10;
-              const gapLength = 7;
-              const lineWidth = 220;
-              const startX = -lineWidth / 2;
-              const offsetY = 25;
-              
-              let x = startX;
-              while (x < startX + lineWidth) {
-                g.moveTo(x, offsetY);
-                g.lineTo(x + dashLength, offsetY);
-                x += dashLength + gapLength;
-              }
-            }}
           />
         </Container>
       )}
@@ -482,7 +458,7 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
             position={[x, y]}
             interactive={true}
             cursor="pointer"
-            pointerdown={() => handleSelectLevel(level.number)} 
+            pointerdown={() => handleSelectLevel(level.number)}
             pointerover={() => setHoverLevel(level.number)}
             pointerout={() => setHoverLevel(null)}
             scale={

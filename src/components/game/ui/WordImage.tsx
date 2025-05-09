@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Sprite, Text } from '@pixi/react';
+import React, { useEffect, useState, useRef } from 'react';
+import { Container, Sprite, Text, useTick } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 
 interface WordImageProps {
@@ -34,6 +34,26 @@ const WordImage: React.FC<WordImageProps> = ({
   const [texture, setTexture] = useState<PIXI.Texture | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [offsetY, setOffsetY] = useState(0);
+  
+  // Animation reference for floating effect
+  const animationRef = useRef({
+    time: 0,
+    speed: 0.02, // Controls animation speed
+    amplitude: 4,  // Controls how much the card moves up and down (4 pixels)
+    uniqueOffset: Math.random() * Math.PI * 2, // Random offset for each card so they don't all move together
+  });
+  
+  // Animate the word image with a gentle floating motion
+  useTick(delta => {
+    if (!isSelected && !isLoading && texture) { // Only animate when loaded and not selected
+      animationRef.current.time += delta * animationRef.current.speed;
+      const newY = Math.sin(animationRef.current.time + animationRef.current.uniqueOffset) * animationRef.current.amplitude;
+      setOffsetY(newY);
+    } else {
+      setOffsetY(0); // Reset position when selected or loading
+    }
+  });
 
   useEffect(() => {
     // Load the image
@@ -101,7 +121,7 @@ const WordImage: React.FC<WordImageProps> = ({
 
   return (
     <Container
-      position={[x, y]}
+      position={[x, y + offsetY]} // Add the animated offset to the Y position
       interactive={interactive}
       cursor={interactive ? 'pointer' : 'default'}
       pointerdown={interactive ? onSelect : undefined}
