@@ -380,15 +380,15 @@ const CompleteScreen: React.FC<CompleteScreenProps> = ({ score, width, height, o
       {/* Continue button appears after animations */}
       {buttonVisible && (
         <GameButton
-          text="Continue"
+          text="Next Level"
           x={0}
-          y={120}
+          y={100}
           onClick={onContinue}
           width={200}
           fontSize={26}
           padding={14}
           backgroundColor={0x22cc22} /* Green color for continue */
-          icon="⏩" /* Fast-forward emoji is more intuitive than arrow */
+          icon="🚀" /* Fast-forward emoji is more intuitive than arrow */
         />
       )}
     </Container>

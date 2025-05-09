@@ -3,6 +3,7 @@ import { Stage, Container } from '@pixi/react';
 import { useAppContext } from '../../context/AppContext';
 import { getImagePath } from '../../services/wordPairsService';
 import { useGameState } from '../../hooks/useGameState';
+import { audioService } from '../../services/audioService';
 
 // UI Components
 import WordImage from './ui/WordImage';
@@ -30,11 +31,29 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
   const { state, dispatch } = useAppContext();
   const gameState = useGameState();
 
-  // Track if we've shown the level selection screen
-  const [showLevelSelect, setShowLevelSelect] = useState(state.showLevelSelection);
+  // Check both app state and sessionStorage to determine if we should show level selection
+  const skipLevelSelectionFromSession = sessionStorage.getItem('skipLevelSelection') === 'true';
+  
+  // Track if we should show the level selection screen
+  const [showLevelSelect, setShowLevelSelect] = useState(
+    state.showLevelSelection && !state.levelSelectionShown && !skipLevelSelectionFromSession
+  );
 
   // Track if we should show the celebration animation
   const [showCelebration, setShowCelebration] = useState(false);
+  
+  // Ensure level 1 is default when level selection is shown
+  useEffect(() => {
+    if (showLevelSelect) {
+      // Always start with level 1 selected when showing level selection
+      dispatch({ type: 'SET_LEVEL', payload: 1 });
+    }
+    
+    // Clean up the session storage entry when component unmounts
+    return () => {
+      sessionStorage.removeItem('skipLevelSelection');
+    };
+  }, [showLevelSelect, dispatch]);
 
   const {
     wordPairs,
@@ -92,21 +111,40 @@ const GameContainer: React.FC<GameContainerProps> = ({ width, height }) => {
     // Call handleNextLevel to potentially increase the level
     const movedToNextLevel = handleNextLevel();
 
-    if (movedToNextLevel !== null) {
-      // If we advanced to a new level, reload the game page to start the new level
+    if (movedToNextLevel) {
+      // If we advanced to a new level, mark level selection as shown
+      dispatch({ type: 'SET_LEVEL_SELECTION_SHOWN', payload: true });
+      
+      // Store this in session storage to ensure it persists through reload
+      sessionStorage.setItem('skipLevelSelection', 'true');
+      
+      // Reload to start the new level
       window.location.reload();
     } else {
       // Otherwise return to home screen
       // Use hash navigation since we're using createHashRouter
       window.location.href = '/#/';
     }
-  }, [handleNextLevel]);
+  }, [handleNextLevel, dispatch]);
 
   // Handle level selection
   const handleLevelSelect = useCallback(
     (level: number) => {
+      // Stop any playing audio immediately
+      audioService.stopAll();
+      
+      // Set the selected level
       dispatch({ type: 'SET_LEVEL', payload: level });
+      
+      // Mark level selection as shown for this session in both app state and session storage
+      dispatch({ type: 'SET_LEVEL_SELECTION_SHOWN', payload: true });
+      sessionStorage.setItem('skipLevelSelection', 'true');
+      
+      // Close the level selection screen
       setShowLevelSelect(false);
+      
+      // No need to reload - the useGameState hook will detect the level change
+      // and reload the word pairs for the new level automatically
     },
     [dispatch]
   );

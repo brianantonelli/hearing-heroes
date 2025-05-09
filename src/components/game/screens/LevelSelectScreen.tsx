@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Graphics, Text, Sprite } from '@pixi/react';
 import { useAppContext } from '../../../context/AppContext';
+import { audioService } from '../../../services/audioService';
 import GameButton from '../ui/GameButton';
 import * as PIXI from 'pixi.js';
 
@@ -22,6 +23,12 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
   const [pulsePhases, setPulsePhases] = useState<number[]>([0, 0, 0, 0]);
   const [iconOffsets, setIconOffsets] = useState<number[]>([0, 0, 0, 0]);
 
+  // Stop any playing audio when the level select screen appears
+  useEffect(() => {
+    // This ensures we don't hear audio from previous screens when level selection appears
+    audioService.stopAll();
+  }, []);
+  
   // Handle animation effects
   useEffect(() => {
     if (!state.enableAnimations) return;
@@ -168,6 +175,7 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({
         const x = gridStartX + col * (buttonWidth + gridGap);
         const y = gridStartY + row * (buttonHeight + gridGap) + verticalOffset;
 
+        // Always show the correct selected level
         const isSelected = level.number === state.currentLevel;
         const iconYOffset = state.enableAnimations ? iconOffsets[index] : 0;
 

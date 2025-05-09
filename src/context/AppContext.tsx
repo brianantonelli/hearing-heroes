@@ -13,6 +13,7 @@ interface AppState {
   requireParentAuth: boolean;
   enableAnimations: boolean;
   showLevelSelection: boolean;
+  levelSelectionShown: boolean; // Track if we've shown the level selection screen in this session
   difficultyMultiplier: number; // Controls how quickly difficulty increases
 }
 
@@ -27,6 +28,7 @@ type AppAction =
   | { type: 'TOGGLE_PARENT_AUTH' }
   | { type: 'TOGGLE_ANIMATIONS' }
   | { type: 'TOGGLE_LEVEL_SELECTION' }
+  | { type: 'SET_LEVEL_SELECTION_SHOWN'; payload: boolean }
   | { type: 'SET_DIFFICULTY_MULTIPLIER'; payload: number };
 
 // Initial state
@@ -39,6 +41,7 @@ const initialState: AppState = {
   requireParentAuth: true,
   enableAnimations: true,
   showLevelSelection: true,
+  levelSelectionShown: false, // Initially not shown
   difficultyMultiplier: 1.0,
 };
 
@@ -98,6 +101,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         showLevelSelection: !state.showLevelSelection,
+      };
+    case 'SET_LEVEL_SELECTION_SHOWN':
+      return {
+        ...state,
+        levelSelectionShown: action.payload,
       };
     case 'SET_DIFFICULTY_MULTIPLIER':
       return {
