@@ -338,7 +338,7 @@ export class DBService {
       // Create default preferences if none exist
       preferences = {
         id,
-        childName: 'Samantha',
+        childName: '',
         isAudioEnabled: true,
         currentLevel: 1,
         maxSessionMinutes: 15,

@@ -12,12 +12,12 @@ class PreferencesService {
    */
   async loadPreferences(id: string = 'default'): Promise<Preferences> {
     let preferences = await dbService.getPreferences(id);
-    
+
     if (!preferences) {
       // Create default preferences
       const defaultPreferences: Preferences = {
         id,
-        childName: 'Samantha',
+        childName: '',
         isAudioEnabled: true,
         isMusicEnabled: true,
         musicVolume: 0.4,
@@ -29,14 +29,14 @@ class PreferencesService {
         requireParentAuth: true,
         lastUpdated: Date.now()
       };
-      
+
       await dbService.savePreferences(defaultPreferences);
       preferences = defaultPreferences;
     }
-    
+
     return preferences;
   }
-  
+
   /**
    * Save preferences to DB
    */
@@ -44,33 +44,33 @@ class PreferencesService {
     preferences.lastUpdated = Date.now();
     await dbService.savePreferences(preferences);
   }
-  
+
   /**
    * Update a single preference value
    */
   async updatePreference(key: keyof Preferences, value: any, id: string = 'default'): Promise<void> {
     await dbService.updatePreference(key, value, id);
   }
-  
+
   /**
    * Bulk update preferences with multiple updates
    */
   async bulkUpdatePreferences(updates: PreferenceUpdate[], id: string = 'default'): Promise<Preferences> {
     let preferences = await this.loadPreferences(id);
-    
+
     // Apply all updates
     for (const update of updates) {
       // Type assertion to avoid TypeScript error with indexing
       (preferences as any)[update.key] = update.value;
     }
-    
+
     // Save updated preferences
     preferences.lastUpdated = Date.now();
     await this.savePreferences(preferences);
-    
+
     return preferences;
   }
-  
+
   /**
    * Convert AppState to Preferences object
    */
@@ -101,21 +101,21 @@ class PreferencesService {
       lastUpdated: Date.now()
     };
   }
-  
+
   /**
    * Clear all practice data but keep preferences
    */
   async clearPracticeData(): Promise<void> {
     await dbService.clearPracticeData();
   }
-  
+
   /**
    * Reset preferences to defaults
    */
   async resetPreferences(id: string = 'default'): Promise<Preferences> {
     const defaultPreferences: Preferences = {
       id,
-      childName: 'Samantha',
+      childName: '',
       isAudioEnabled: true,
       isMusicEnabled: true,
       musicVolume: 0.4,
@@ -123,15 +123,15 @@ class PreferencesService {
       maxSessionMinutes: 15,
       difficultyMultiplier: 1.0,
       enableAnimations: true,
-      showLevelSelection: true, 
+      showLevelSelection: true,
       requireParentAuth: true,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
-    
+
     await this.savePreferences(defaultPreferences);
     return defaultPreferences;
   }
-  
+
   /**
    * Reset all data including preferences and practice data
    */

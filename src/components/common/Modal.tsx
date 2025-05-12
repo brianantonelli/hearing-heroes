@@ -22,7 +22,7 @@ const Modal: React.FC<ModalProps> = ({
   variant = 'info',
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
-  
+
   // Close modal when clicking outside
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -30,18 +30,18 @@ const Modal: React.FC<ModalProps> = ({
         onClose();
       }
     };
-    
+
     if (isOpen) {
       document.addEventListener('mousedown', handleOutsideClick);
     } else {
       document.removeEventListener('mousedown', handleOutsideClick);
     }
-    
+
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
   }, [isOpen, onClose]);
-  
+
   // Handle escape key
   useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
@@ -49,18 +49,18 @@ const Modal: React.FC<ModalProps> = ({
         onClose();
       }
     };
-    
+
     if (isOpen) {
       document.addEventListener('keydown', handleEscapeKey);
     } else {
       document.removeEventListener('keydown', handleEscapeKey);
     }
-    
+
     return () => {
       document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [isOpen, onClose]);
-  
+
   // Prevent body scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -68,12 +68,12 @@ const Modal: React.FC<ModalProps> = ({
     } else {
       document.body.style.overflow = 'auto';
     }
-    
+
     return () => {
       document.body.style.overflow = 'auto';
     };
   }, [isOpen]);
-  
+
   if (!isOpen) {
     return null;
   }
@@ -91,21 +91,19 @@ const Modal: React.FC<ModalProps> = ({
     warning: 'bg-yellow-500 hover:bg-yellow-600',
     danger: 'bg-red-600 hover:bg-red-700',
   }[variant];
-  
+
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-      <div 
+      <div
         ref={modalRef}
         className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden"
       >
         <div className={`${headerColorClass} text-white py-3 px-4`}>
           <h3 className="text-lg font-semibold">{title}</h3>
         </div>
-        
-        <div className="p-5">
-          {children}
-        </div>
-        
+
+        <div className="p-3">{children}</div>
+
         <div className="bg-gray-100 px-4 py-3 flex justify-center">
           {onConfirm && (
             <button

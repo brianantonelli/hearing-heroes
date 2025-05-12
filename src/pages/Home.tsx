@@ -9,6 +9,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { state, dispatch } = useAppContext();
   const [showNameModal, setShowNameModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   const [nameInput, setNameInput] = useState('');
   const [musicPlaying, setMusicPlaying] = useState(false);
 
@@ -106,10 +107,10 @@ const Home: React.FC = () => {
   const handleStartGame = () => {
     // Reset level selection shown status so it reappears when returning to the game
     dispatch({ type: 'SET_LEVEL_SELECTION_SHOWN', payload: false });
-    
+
     // Also clear session storage skipLevelSelection flag to ensure it doesn't persist
     sessionStorage.removeItem('skipLevelSelection');
-    
+
     // Clear background music when navigating away
     audioService.clearBackgroundMusic();
     setMusicPlaying(false);
@@ -202,7 +203,9 @@ const Home: React.FC = () => {
                 alt="Hearing Aid"
                 className="h-16 md:h-20 mr-6 animate-rock-left"
               />
-              <h1 className="text-5xl text-primary md:text-6xl animate-pulse">Hearing Heroes</h1>
+              <h1 className="text-5xl text-primary md:text-6xl animate-pulse font-semibold">
+                Hearing Heroes
+              </h1>
               <img
                 src="/images/ci.png"
                 alt="Cochlear Implant"
@@ -217,56 +220,72 @@ const Home: React.FC = () => {
             </>
           )}
         </div>
-        <p className="text-2xl text-gray-600 mb-8 md:text-3xl">
-          Speech discrimination practice for {state.childName}
-        </p>
-      </div>
-
-      <div className="flex flex-col items-center justify-center w-full relative z-10">
-        {state.enableAnimations ? (
-          <button
-            className="bg-primary text-3xl md:text-4xl text-white py-6 px-6 rounded-2xl
-            transition-all active:scale-95 shadow-lg flex flex-col items-center gap-2 relative overflow-hidden
-            border-4 animate-rainbow-border animate-button-pulse"
-            onClick={handleStartGame}
-          >
-            {/* Button shine effect */}
-            <div className="button-shine"></div>
-
-            {/* Emoji background effects */}
-            <div className="absolute opacity-10 text-5xl -left-5 top-2 rotate-12">🎵</div>
-            <div className="absolute opacity-10 text-5xl -right-5 bottom-2 -rotate-12">🎧</div>
-
-            {/* Main content */}
-            <div className="drop-shadow-lg">
-              <span className="text-5xl md:text-6xl animate-bounce inline-block">🎮</span>
-            </div>
-            <span className="font-bold drop-shadow-md tracking-wider">PLAY!</span>
-
-            {/* Fun decorative elements */}
-            <div className="absolute -right-3 -top-3 text-2xl animate-ping">✨</div>
-            <div
-              className="absolute -left-3 -top-3 text-2xl animate-ping"
-              style={{ animationDelay: '0.5s' }}
-            >
-              ✨
-            </div>
-          </button>
-        ) : (
-          <button
-            className="bg-primary text-3xl md:text-4xl text-white py-8 px-12 rounded-2xl
-            transition-all active:scale-95 shadow-lg flex flex-col items-center gap-2 relative overflow-hidden"
-            onClick={handleStartGame}
-          >
-            <span className="text-6xl md:text-7xl mb-2">🎮</span>
-            <span>Play</span>
-          </button>
+        {/* <p className="text-2xl text-gray-600 mb-8 md:text-3xl">
+          Speech Discrimination Practice{state.childName.length ? ` for ${state.childName}` : ''}.
+        </p> */}
+        {state.childName.length > 0 && (
+          <p className="text-2xl text-gray-600 mb-8 md:text-3xl">
+            {state.enableAnimations ? <span className="animate-rock-left mr-2">👋</span> : '👋'}
+            Welcome back, {state.childName}!
+          </p>
         )}
+        <p></p>
       </div>
 
-      <footer className="mt-8 w-full flex justify-center items-center px-2 relative z-10">
-        {/* Footer content removed - icons moved to top corners */}
-      </footer>
+      <div className="flex items-end justify-between w-full relative z-10">
+        <div className="flex-1 flex justify-center">
+          {state.enableAnimations ? (
+            <button
+              className="bg-primary text-3xl md:text-4xl text-white py-6 px-6 rounded-2xl
+              transition-all active:scale-95 shadow-lg flex flex-col items-center gap-2 relative overflow-hidden
+              border-4 animate-rainbow-border animate-button-pulse"
+              onClick={handleStartGame}
+            >
+              {/* Button shine effect */}
+              <div className="button-shine"></div>
+
+              {/* Emoji background effects */}
+              <div className="absolute opacity-10 text-5xl -left-5 top-2 rotate-12">🎵</div>
+              <div className="absolute opacity-10 text-5xl -right-5 bottom-2 -rotate-12">🎧</div>
+
+              {/* Main content */}
+              <div className="drop-shadow-lg">
+                <span className="text-5xl md:text-6xl animate-bounce inline-block">🎮</span>
+              </div>
+              <span className="font-bold drop-shadow-md tracking-wider">PLAY!</span>
+
+              {/* Fun decorative elements */}
+              <div className="absolute -right-3 -top-3 text-2xl animate-ping">✨</div>
+              <div
+                className="absolute -left-3 -top-3 text-2xl animate-ping"
+                style={{ animationDelay: '0.5s' }}
+              >
+                ✨
+              </div>
+            </button>
+          ) : (
+            <button
+              className="bg-primary text-3xl md:text-4xl text-white py-8 px-12 rounded-2xl
+              transition-all active:scale-95 shadow-lg flex flex-col items-center gap-2 relative overflow-hidden"
+              onClick={handleStartGame}
+            >
+              <span className="text-6xl md:text-7xl mb-2">🎮</span>
+              <span>Play</span>
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-end self-end mb-2">
+          <img
+            src="/images/info.png"
+            alt="Hearing Aid"
+            onClick={() => setShowInfoModal(true)}
+            className="h-8"
+          />
+        </div>
+      </div>
+
+      <footer className="mt-8 w-full flex justify-end items-center px-8 relative z-10"></footer>
 
       {/* Child Name Modal */}
       <Modal
@@ -337,6 +356,29 @@ const Home: React.FC = () => {
               )}
             </div>
           </div>
+        </div>
+      </Modal>
+
+      {/* Contact Information Modal */}
+      <Modal
+        title="About Hearing Heroes"
+        isOpen={showInfoModal}
+        onClose={() => setShowInfoModal(false)}
+        onConfirm={() => setShowInfoModal(false)}
+        confirmText="Close"
+        variant="info"
+      >
+        <div className="space-y-3">
+          <p className="text-left text-gray-600 mt-0">
+            This game was made with ❤️ for my daughter, Samantha. My goal is not only to help her
+            through her journey with hearing loss, but to help all others. I chose to make it
+            available for free to all families who are on a similar journey. I hope it brings joy
+            and fun to you!
+          </p>
+          <p className="text-left text-gray-600">
+            If you have any questions, suggestions, or feedback, please feel free to reach out to me
+            at: <a href="mailto:brian.antonelli@gmail.com">brian.antonelli@gmail.com</a>
+          </p>
         </div>
       </Modal>
     </div>
